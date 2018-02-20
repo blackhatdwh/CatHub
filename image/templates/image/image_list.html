@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <meta charset="utf-8" />
+		<title>Image_List</title>
+	</head>
+	<body>
+        <ul>
+            {% for image in images %}
+            <li>
+                    <img id="{{ image.id }}" src="{{ image.still_file.url }}" onclick="replace({{ image.id }})"/>
+                    <br>
+                    <a image_id="{{ image.id }}" class="oo">oo</a>：<span image_id="{{ image.id }}" class="oo_num">{{ image.oo_num }}</span>   <a image_id="{{ image.id }}" class="xx">xx</a>：<span image_id="{{ image.id }}" class="xx_num">{{ image.xx_num }}</span>   <a image_id="{{ image.id }}" class="comment">评论</a>：<span image_id="{{ image.id }}" class="comment_num">{{ image.comment_num }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    <script>
+        function replace(id){
+            id2gif = {{ id2gif | safe }};
+            document.getElementById(id).src = id2gif[id];
+        }
+    </script>
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
+
+    <script>
+    $('.oo').click(
+        function(){
+            var oo_num = $(this).parent().children().filter('.oo_num');
+            $.get('{% url 'validate_ooxx' %}', {image_id: $(this).attr('image_id'), attitude: 'oo'}, function(data){
+                        if(data.result == 'Success'){
+                            alert('Success')
+                            oo_num.text(parseInt(oo_num.text()) + 1);
+                        }
+                        else{
+                            alert(data.result)
+                        }
+            });
+        });
+
+    $('.xx').click(
+        function(){
+            var xx_num = $(this).parent().children().filter('.xx_num');
+            $.get('{% url 'validate_ooxx' %}', {image_id: $(this).attr('image_id'), attitude: 'xx'}, function(data){
+                        if(data.result == 'Success'){
+                            alert('Success')
+                            xx_num.text(parseInt(xx_num.text()) + 1);
+                        }
+                        else{
+                            alert(data.result)
+                        }
+            });
+        });
+
+    $('.comment').click(function(){
+            var this_ = $(this);
+            $.get('{% url 'get_comment' %}', {image_id: $(this).attr('image_id')}, function(data){
+                if(this_.parent().children().length == 8){
+                    // show comment and form
+                    this_.parent().append('<ul></ul>')
+                    for (var i in data){
+                        this_.parent().children().last().append('<li id="comment_'+data[i].comment_id+'"><b class="user">'+data[i].name+'：</b>'+data[i].content+'<a class="comment_oo">oo：</a><span class="comment_oo_num">'+data[i].oo_num+'</span><a class="comment_xx">xx：</a><span class="comment_xx_num">'+data[i].xx_num+'</span></li>');
+                    }
+                    var form = "<form>\
+                        {% csrf_token %}\
+                        <input type=\"hidden\" name=\"image_id\" value=\"%s\">\
+                        <input type=\"hidden\" name=\"reply_to\" value=\"\">\
+                        <label for=\"name\">昵称</label>\
+                        <textarea name=\"name\" cols=\"30\" rows=\"1\" id=\"name\"></textarea>\
+                        <br><label for=\"content\">评论</label>\
+                        <textarea name=\"content\" cols=\"30\" rows=\"5\" id=\"content\"></textarea>\
+                        <span class=\"submit\">提交</span>".replace('%s', this_.attr("image_id"))
+                    this_.parent().append(form);
+                }
+                // remove comment and form
+                else{
+                    this_.parent().children().last().remove();
+                    this_.parent().children().last().remove();
+                }
+
+            });
+        });
+
+    $(document).on('click', '.submit', function(){
+        var image_id = $(this).parent().parent().children().get(2).getAttribute('image_id');
+        var form = $('#'+image_id).parent().children().last();
+        $.post('{% url 'add_comment' %}', form.serialize(), function(data){
+            if(data.result == "Success"){
+                alert("success");
+                var username = form.find('textarea[name="name"]').val() + '：';
+                var comment = form.find('textarea[name="content"]').val();
+                $('#'+image_id).parent().children().slice(-2, -1).append('<li><b class="user">'+username+'</b>'+comment+'</li>');     // update comment
+                var comment_num = $('#'+image_id).parent().children().filter('span.comment_num').text();        // update comment num
+                $('#'+image_id).parent().children().filter('span.comment_num').text(parseInt(comment_num)+1);
+                form.find('textarea[name="name"]').val("");     // clear
+                form.find('textarea[name="content"]').val("");
+            }
+            else{
+                alert(data.result);     // fail
+            }
+        });
+    });
+
+    $(document).on('click', '.user', function(){
+        var image_id = $(this).parent().parent().parent().children().get(2).getAttribute('image_id');
+        var comment_id = $(this).parent().attr('id');       // reply to which comment
+        var comment_name = $(this).parent().children().filter('b.user').text();     // replyee's name
+        var reply_to_field = $(this).parent().parent().parent().children().last().children().filter('input[name="reply_to"]');
+        var content_field = $(this).parent().parent().parent().children().last().children().filter('textarea[name="content"]');
+        reply_to_field.val(comment_id.split('_').slice(-1));
+        content_field.val("回复 "+comment_name);
+    });
+
+$(document).on('click', '.comment_oo', function(){
+    var comment_id = $(this).parent().attr('id').split('_').slice(-1)[0];
+    console.log(comment_id);
+    var oo_num = $(this).parent().children().filter('.comment_oo_num');
+    $.get('{% url 'validate_comment_ooxx' %}', {comment_id: comment_id, attitude: 'oo'}, function(data){
+        if(data.result == 'Success'){
+            oo_num.text(parseInt(oo_num.text())+1);
+            alert('success');
+        }
+        else{
+            alert(data.result);
+        }
+    });
+});
+
+$(document).on('click', '.comment_xx', function(){
+    var comment_id = $(this).parent().attr('id').split('_').slice(-1)[0];
+    console.log(comment_id);
+    var xx_num = $(this).parent().children().filter('.comment_xx_num');
+    $.get('{% url 'validate_comment_ooxx' %}', {comment_id: comment_id, attitude: 'xx'}, function(data){
+        if(data.result == 'Success'){
+            xx_num.text(parseInt(xx_num.text())+1);
+            alert('success');
+        }
+        else{
+            alert(data.result);
+        }
+    });
+});
+    </script>
+	</body>
+</html>

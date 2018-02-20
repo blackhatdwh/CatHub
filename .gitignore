@@ -1,0 +1,5 @@
+M.sh
+R.sh
+media/
+*.pyc
+image/migrations/
