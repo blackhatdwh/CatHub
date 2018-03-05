@@ -1,0 +1,39 @@
+/*
+ * style.css
+ * Copyright (C) 2018 weihao
+ *
+ * Distributed under terms of the MIT license.
+ */
+
+body {
+	background: #fcfcfc;
+	color: black;
+}
+
+.container {
+    margain: 0 auto;
+    max-width: 1280px;
+    width: 80%;
+}
+
+.brand-logo img{
+    height: 64px;
+}
+@media (max-width: 600px) {
+  .brand-logo img {
+    height: 56px;
+  }
+}
+
+.card .card-reveal{
+  opacity: 0.9;
+}
+
+.collection .collection-item.avatar{
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+nav {
+  margin-bottom: 10px;
+}
