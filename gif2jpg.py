@@ -11,23 +11,24 @@
 from PIL import Image
 from PIL import GifImagePlugin
 mask = Image.open("./mask.png")
-imageObject = Image.open("./cat.gif")
+imageObject = Image.open("./d.gif")
 imageObject.seek(0)
 
 segments = imageObject.filename.split('.')[:-1]
 filename = ''
 for seg in segments:
     filename = filename + seg + '.' 
-filename += 'bmp'
+filename += 'jpg'
 
 width, height = imageObject.size
-if width < 300 or height < 300:
-    imageObject = imageObject.resize((300, 300))
-imageObject = imageObject.crop((width/2-150, height/2-150, width/2+150, height/2+150))
+if width < height:
+    imageObject = imageObject.crop((0, height/2-width/2, width, height/2+width/2))
+else:
+    imageObject = imageObject.crop((width/2-height/2, 0, width/2+height/2, height))
+imageObject = imageObject.resize((300, 300))
 
 imageObject = imageObject.convert('RGBA')
 mask = mask.convert('RGBA')
 
 
-Image.alpha_composite(imageObject, mask).save(filename)
-
+Image.alpha_composite(imageObject, mask).convert('RGB').save(filename)

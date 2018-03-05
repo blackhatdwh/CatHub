@@ -4,4 +4,3 @@ from .models import *
 
 admin.site.register(Image)
 admin.site.register(Comment)
-admin.site.register(Comment_Vote)

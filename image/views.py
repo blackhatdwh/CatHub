@@ -11,7 +11,7 @@ from .form import *
 
 # Create your views here.
 def index(request):
-    image_list = Image.objects.all()
+    image_list = Image.objects.all().order_by("-pub_date")
     paginator = Paginator(image_list, 25)
     page = request.GET.get('page')
     images = paginator.get_page(page)
@@ -73,12 +73,14 @@ def add_comment(request):
         image.save()
         if request.POST['reply_to'] == '':
             reply_to = None
+            content_prefix = ''
         else:
             reply_to = Comment.objects.get(id=request.POST['reply_to'])
+            content_prefix = '回复<b class="user">%s</b>：' % reply_to.name
         comment = Comment(
                 image_id = image,\
                 name = request.POST['name'],\
-                content = request.POST['content'],\
+                content = content_prefix + request.POST['content'],\
                 pub_date = timezone.now(),\
                 oo_num = 0,\
                 xx_num = 0,\

@@ -1,144 +1,241 @@
+<!-- var_t: text  var_e: element-->
 <!DOCTYPE html>
 <html>
-	<head>
-        <meta charset="utf-8" />
-		<title>Image_List</title>
-	</head>
-	<body>
-        <ul>
-            {% for image in images %}
-            <li>
-                    <img id="{{ image.id }}" src="{{ image.still_file.url }}" onclick="replace({{ image.id }})"/>
-                    <br>
-                    <a image_id="{{ image.id }}" class="oo">oo</a>：<span image_id="{{ image.id }}" class="oo_num">{{ image.oo_num }}</span>   <a image_id="{{ image.id }}" class="xx">xx</a>：<span image_id="{{ image.id }}" class="xx_num">{{ image.xx_num }}</span>   <a image_id="{{ image.id }}" class="comment">评论</a>：<span image_id="{{ image.id }}" class="comment_num">{{ image.comment_num }}</span>
-            </li>
-            {% endfor %}
+  <head>
+    {% load static %}
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>CatHub</title>
+    <link href="https://cdn.bootcss.com/materialize/0.100.2/css/materialize.css" rel="stylesheet">
+    <link href="https://cdn.bootcss.com/material-design-icons/3.0.1/iconfont/material-icons.css" rel="stylesheet">
+    <link href="{% static 'image/css/style.css' %}" rel="stylesheet">
+  </head>
+  <body>
+    <nav class="grey darken-4" role="navigation">
+      <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo"><img src="{% static 'image/img/logo.svg' %}"/></a>
+        <ul class="right hide-on-med-and-down">
+          <li class="active"><a href="#">猫图</a></li>
+          <li><a href="#">猫片</a></li>
+          <li><a href="#">热榜</a></li>
+          <li><a href="#">名猫</a></li>
+          <li><a href="#">直播</a></li>
+          <li><a href="#">猫币</a></li>
         </ul>
-    <script>
-        function replace(id){
-            id2gif = {{ id2gif | safe }};
-            document.getElementById(id).src = id2gif[id];
-        }
-    </script>
+
+        <ul id="nav-mobile" class="side-nav">
+          <li><a href="#">猫图</a></li>
+          <li><a href="#">猫片</a></li>
+          <li><a href="#">热榜</a></li>
+          <li><a href="#">名猫</a></li>
+          <li><a href="#">直播</a></li>
+          <li><a href="#">猫币</a></li>
+        </ul>
+        <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
+      </div>
+    </nav>
+
+
+
+    <div class="container">
+      <div class="row top-level">
+        {% for image in images %}
+        <div class="col l4 m6 s12 adam" id="{{ image.id }}">
+          <div class="card hoverable">
+            <div class="card-image">
+              <img class="post_image" src="{{ image.still_file.url }}"/>
+            </div>
+            <div class="card-content">
+              <a class="oo_trigger">
+                <div class="chip hoverable">
+                  <img src="https://image.flaticon.com/icons/svg/196/196586.svg">
+                  <span class="oo_num"> {{ image.oo_num }}</span>
+                </div>
+              </a>
+              <a class="xx_trigger">
+                <div class="chip hoverable">
+                  <img src="https://image.flaticon.com/icons/svg/196/196587.svg">
+                  <span class="xx_num"> {{ image.xx_num }}</span>
+                </div>
+              </a>
+              <a class="comment_trigger comment_off right">
+                <div class="chip activator hoverable">
+                  <img class="activator" src="https://cdn0.iconfinder.com/data/icons/social-messaging-ui-color-shapes/128/chat-circle-blue-512.png">
+                  <span class="comment_num"> {{ image.comment_num }}</span>
+                </div>
+              </a>
+            </div>
+            <div class="card-reveal">
+              <span class="card-title username">{{ image.name }}<i class="material-icons right">close</i></span>
+              <span class="pub_date">发布于{{ image.pub_date }}</span>
+              <ul class="collection"></ul>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
     <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
+    <script src="https://cdn.bootcss.com/materialize/0.100.2/js/materialize.js"></script>
+    <script src="https://cdn.bootcss.com/masonry/4.2.1/masonry.pkgd.js"></script>
 
     <script>
-    $('.oo').click(
-        function(){
-            var oo_num = $(this).parent().children().filter('.oo_num');
-            $.get('{% url 'validate_ooxx' %}', {image_id: $(this).attr('image_id'), attitude: 'oo'}, function(data){
-                        if(data.result == 'Success'){
-                            alert('Success')
-                            oo_num.text(parseInt(oo_num.text()) + 1);
-                        }
-                        else{
-                            alert(data.result)
-                        }
-            });
-        });
+      $(document).ready(function(){
+        $(".button-collapse").sideNav();
+      });
 
-    $('.xx').click(
-        function(){
-            var xx_num = $(this).parent().children().filter('.xx_num');
-            $.get('{% url 'validate_ooxx' %}', {image_id: $(this).attr('image_id'), attitude: 'xx'}, function(data){
-                        if(data.result == 'Success'){
-                            alert('Success')
-                            xx_num.text(parseInt(xx_num.text()) + 1);
-                        }
-                        else{
-                            alert(data.result)
-                        }
-            });
-        });
-
-    $('.comment').click(function(){
-            var this_ = $(this);
-            $.get('{% url 'get_comment' %}', {image_id: $(this).attr('image_id')}, function(data){
-                if(this_.parent().children().length == 8){
-                    // show comment and form
-                    this_.parent().append('<ul></ul>')
-                    for (var i in data){
-                        this_.parent().children().last().append('<li id="comment_'+data[i].comment_id+'"><b class="user">'+data[i].name+'：</b>'+data[i].content+'<a class="comment_oo">oo：</a><span class="comment_oo_num">'+data[i].oo_num+'</span><a class="comment_xx">xx：</a><span class="comment_xx_num">'+data[i].xx_num+'</span></li>');
-                    }
-                    var form = "<form>\
-                        {% csrf_token %}\
-                        <input type=\"hidden\" name=\"image_id\" value=\"%s\">\
-                        <input type=\"hidden\" name=\"reply_to\" value=\"\">\
-                        <label for=\"name\">昵称</label>\
-                        <textarea name=\"name\" cols=\"30\" rows=\"1\" id=\"name\"></textarea>\
-                        <br><label for=\"content\">评论</label>\
-                        <textarea name=\"content\" cols=\"30\" rows=\"5\" id=\"content\"></textarea>\
-                        <span class=\"submit\">提交</span>".replace('%s', this_.attr("image_id"))
-                    this_.parent().append(form);
-                }
-                // remove comment and form
-                else{
-                    this_.parent().children().last().remove();
-                    this_.parent().children().last().remove();
-                }
-
-            });
-        });
-
-    $(document).on('click', '.submit', function(){
-        var image_id = $(this).parent().parent().children().get(2).getAttribute('image_id');
-        var form = $('#'+image_id).parent().children().last();
-        $.post('{% url 'add_comment' %}', form.serialize(), function(data){
-            if(data.result == "Success"){
-                alert("success");
-                var username = form.find('textarea[name="name"]').val() + '：';
-                var comment = form.find('textarea[name="content"]').val();
-                $('#'+image_id).parent().children().slice(-2, -1).append('<li><b class="user">'+username+'</b>'+comment+'</li>');     // update comment
-                var comment_num = $('#'+image_id).parent().children().filter('span.comment_num').text();        // update comment num
-                $('#'+image_id).parent().children().filter('span.comment_num').text(parseInt(comment_num)+1);
-                form.find('textarea[name="name"]').val("");     // clear
-                form.find('textarea[name="content"]').val("");
-            }
-            else{
-                alert(data.result);     // fail
-            }
-        });
+// change still image to gif
+$(".post_image").click(function(){
+  var id2gif = {{ id2gif | safe }};
+  var id_t = $(this).closest("div.adam").attr("id");
+  $(this).attr("src", id2gif[id_t]).on('load', function(){
+    console.log("loaded!");
+    $(".top-level").masonry({
+      itemSelector: '.adam',
     });
-
-    $(document).on('click', '.user', function(){
-        var image_id = $(this).parent().parent().parent().children().get(2).getAttribute('image_id');
-        var comment_id = $(this).parent().attr('id');       // reply to which comment
-        var comment_name = $(this).parent().children().filter('b.user').text();     // replyee's name
-        var reply_to_field = $(this).parent().parent().parent().children().last().children().filter('input[name="reply_to"]');
-        var content_field = $(this).parent().parent().parent().children().last().children().filter('textarea[name="content"]');
-        reply_to_field.val(comment_id.split('_').slice(-1));
-        content_field.val("回复 "+comment_name);
-    });
-
-$(document).on('click', '.comment_oo', function(){
-    var comment_id = $(this).parent().attr('id').split('_').slice(-1)[0];
-    console.log(comment_id);
-    var oo_num = $(this).parent().children().filter('.comment_oo_num');
-    $.get('{% url 'validate_comment_ooxx' %}', {comment_id: comment_id, attitude: 'oo'}, function(data){
-        if(data.result == 'Success'){
-            oo_num.text(parseInt(oo_num.text())+1);
-            alert('success');
-        }
-        else{
-            alert(data.result);
-        }
-    });
+  });
 });
 
-$(document).on('click', '.comment_xx', function(){
-    var comment_id = $(this).parent().attr('id').split('_').slice(-1)[0];
-    console.log(comment_id);
-    var xx_num = $(this).parent().children().filter('.comment_xx_num');
-    $.get('{% url 'validate_comment_ooxx' %}', {comment_id: comment_id, attitude: 'xx'}, function(data){
-        if(data.result == 'Success'){
-            xx_num.text(parseInt(xx_num.text())+1);
-            alert('success');
-        }
-        else{
-            alert(data.result);
-        }
-    });
+$(".oo_trigger").click(function(){ 
+  var oo_num_e = $(this).closest("div.adam").find("span.oo_num");
+  var image_id_t = $(this).closest("div.adam").attr("id");
+  $.get('{% url 'validate_ooxx' %}', {image_id: image_id_t, attitude: 'oo'}, function(data){
+    if(data.result == 'Success'){
+      Materialize.toast('投票成功！', 4000, 'orange rounded');
+      oo_num_e.text(parseInt(oo_num_e.text()) + 1);
+    }
+    else{
+      Materialize.toast(data.result, 4000, 'orange rounded');
+    }
+  });
 });
+
+$(".xx_trigger").click(function(){ 
+  var xx_num_e = $(this).closest("div.adam").find("span.xx_num");
+  var image_id_t = $(this).closest("div.adam").attr("id");
+  $.get('{% url 'validate_ooxx' %}', {image_id: image_id_t, attitude: 'xx'}, function(data){
+    if(data.result == 'Success'){
+      Materialize.toast('投票成功！', 4000, 'orange rounded');
+      xx_num_e.text(parseInt(xx_num_e.text()) + 1);
+    }
+    else{
+      Materialize.toast(data.result, 4000, 'orange rounded');
+    }
+  });
+});
+
+
+$('.comment_trigger').click(function(){
+  var image_id_t = $(this).closest("div.adam").attr("id");
+  var comment_ul_e = $(this).closest("div.adam").find(".collection");
+  comment_ul_e.empty();
+  var tmp = comment_ul_e.parent().find("div:has(form)");
+  if(tmp.length != 0){
+    tmp.remove();
+  }
+  $.get('{% url 'get_comment' %}', {image_id: image_id_t}, function(data){
+    for (var i in data){
+      var comment_li_e = '<li class="collection-item avatar" id="comment_'+data[i].comment_id+'"><b class="user">'+data[i].name+'：</b><p>'+data[i].content+'</p><span>&nbsp;</span><span class="right"><a class="comment_oo_trigger">oo: </a><span class="comment_oo_num">'+data[i].oo_num+'</span>&nbsp;&nbsp;<a class="comment_xx_trigger">xx: </a><span class="comment_xx_num">'+data[i].xx_num+'</span></span></li>';
+      comment_ul_e.append(comment_li_e);
+    }
+      var form = "\
+      <div class=\"row\">\
+      <form>\
+    {% csrf_token %}\
+      <input type=\"hidden\" name=\"image_id\" value=\"%s\">\
+      <input type=\"hidden\" name=\"reply_to\" value=\"\">\
+      <div class=\"input-field col s12\">\
+      <input name=\"name\" id=\"name\" type=\"text\" style=\"margin-bottom: 0px;\">\
+      <label for=\"name\">昵称</label>\
+      </div>\
+      <div class=\"input-field col s12\">\
+      <textarea name=\"content\" id=\"content\" class=\"materialize-textarea\"></textarea>\
+      <label for=\"content\">评论</label>\
+      </div>\
+      <div class=\"col s6\">\
+      <a class=\"cancel btn pink lighten-1\"  style=\"width: 100%\"><i class=\"material-icons\">cancel</i></a>\
+      </div>\
+      <div class=\"col s6\">\
+      <a class=\"submit btn\"  style=\"width: 100%\"><i class=\"material-icons\">send</i></a>\
+      </div>\
+      </form>\
+      </div>".replace("%s", image_id_t);
+
+    comment_ul_e.parent().append(form);
+    Materialize.updateTextFields();
+  });
+});
+
+$(document).on('click', '.submit', function(){
+  var image_id_t = $(this).closest("div.adam").attr("id");
+  var form_e = $('#'+image_id_t).find("form");
+  var this_ = $(this);
+  $.post('{% url 'add_comment' %}', form_e.serialize(), function(data){
+    if(data.result == "Success"){
+      Materialize.toast('评论成功！', 4000, 'orange rounded');
+      $("#"+image_id_t).find("span.card-title").click();
+      $("#"+image_id_t).find("div.activator").click();
+      //scrollToBottom(this_);
+    }
+    else{
+      Materialize.toast(data.result, 4000, 'orange rounded');
+    }
+  });
+});
+
+$(document).on('click', '.user', function(){ 
+  var image_id_t = $(this).closest("div.adam").attr("id");
+  var comment_id_t = $(this).closest("li.avatar").attr("id").split("_").slice(-1)[0];       // reply to which comment
+  var comment_name_t = $(this).parent().children('b.user').text();     // replyee's name
+  var reply_to_field_e = $(this).closest("div.adam").find('input[name="reply_to"]');
+  var content_field_e = $(this).closest("div.adam").find('textarea[name="content"]');
+  var content_label_e = $(this).closest("div.adam").find('label[for="content"]');
+  reply_to_field_e.val(comment_id_t);
+  content_label_e.text("回复 "+comment_name_t);
+  scrollToBottom($(this));
+});
+
+$(document).on('click', '.cancel', function(){ 
+  var reply_to_field_e = $(this).closest("div.adam").find('input[name="reply_to"]');
+  var content_label_e = $(this).closest("div.adam").find('label[for="content"]');
+  var content_field_e = $(this).closest("div.adam").find('textarea[name="content"]');
+  reply_to_field_e.val("");
+  content_label_e.text("评论");
+  content_field_e.val("");
+});
+
+$(document).on('click', '.comment_oo_trigger', function(){
+  var comment_id_t = $(this).closest("li.avatar").attr("id").split("_").slice(-1)[0];
+  var oo_num_e = $(this).closest("li.avatar").find("span.comment_oo_num");
+  $.get('{% url 'validate_comment_ooxx' %}', {comment_id: comment_id_t, attitude: 'oo'}, function(data){
+    if(data.result == 'Success'){
+      oo_num_e.text(parseInt(oo_num_e.text())+1);
+      Materialize.toast('投票成功！', 4000, 'orange rounded');
+    }
+    else{
+      Materialize.toast(data.result, 4000, 'orange rounded');
+    }
+  });
+});
+
+$(document).on('click', '.comment_xx_trigger', function(){
+  var comment_id_t = $(this).closest("li.avatar").attr("id").split("_").slice(-1)[0];
+  var xx_num_e = $(this).closest("li.avatar").find("span.comment_xx_num");
+  $.get('{% url 'validate_comment_ooxx' %}', {comment_id: comment_id_t, attitude: 'xx'}, function(data){
+    if(data.result == 'Success'){
+      xx_num_e.text(parseInt(xx_num_e.text())+1);
+      Materialize.toast('投票成功！', 4000, 'orange rounded');
+    }
+    else{
+      Materialize.toast(data.result, 4000, 'orange rounded');
+    }
+  });
+});
+
+function scrollToBottom(element){
+  var frame = element.closest("div.card-reveal");
+  frame.animate({scrollTop: frame[0].scrollHeight}, "fast");
+}
+
     </script>
-	</body>
+  </body>
 </html>
