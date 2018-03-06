@@ -18,15 +18,14 @@ def index(request):
     id2gif = {}
     for image in images:
         id2gif[image.id] = image.gif_url
-    form = CommentForm()
-
+    
     context = {
             'images': images,
             'id2gif': json.dumps(id2gif),
-            'form': form,
+            'img_per_line': request.session.get("img_per_line", 3),
+            'night_mode': request.session.get("night_mode", False),
             }
-    return render(request, 'image/image_list.html', context)
-
+    return render(request, 'image/image_list.html', context) 
 def validate_ooxx(request):
     image_id = request.GET.get('image_id', None)
     if request.session.get('%s_has_voted'%image_id, False):
@@ -106,3 +105,13 @@ def validate_comment_ooxx(request):
     comment.save()
     return JsonResponse({'result': 'Success'})
 
+def set_preference(request):
+    img_per_line = request.GET.get('img_per_line', False)
+    if img_per_line:
+        request.session['img_per_line'] = img_per_line
+    night_mode = request.GET.get('night_mode', False)
+    if night_mode:
+        request.session['night_mode'] = night_mode
+
+
+    return JsonResponse({'result': 'Success'})

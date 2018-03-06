@@ -37,3 +37,18 @@ body {
 nav {
   margin-bottom: 10px;
 }
+
+.preloader{
+  left: 0 !important;
+  right: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  margin-top: auto !important;
+  margin-bottom: auto !important;
+  width: 200px !important;
+  height: 200px !important;
+  position: absolute !important;
+  z-index: 10 !important;
+}

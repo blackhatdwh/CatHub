@@ -15,12 +15,14 @@
       <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo"><img src="{% static 'image/img/logo.svg' %}"/></a>
         <ul class="right hide-on-med-and-down">
           <li class="active"><a href="#">猫图</a></li>
-          <li><a href="#">猫片</a></li>
-          <li><a href="#">热榜</a></li>
-          <li><a href="#">名猫</a></li>
-          <li><a href="#">直播</a></li>
-          <li><a href="#">猫币</a></li>
+          <li><a href="#" class="tooltipped" data-position="bottom" data-delay="50" data-tooltip="正在建设中">猫片</a></li>
+          <li><a href="#" class="tooltipped" data-position="bottom" data-delay="50" data-tooltip="正在建设中">热榜</a></li>
+          <li><a href="#" class="tooltipped" data-position="bottom" data-delay="50" data-tooltip="正在建设中">名猫</a></li>
+          <li><a href="#" class="tooltipped" data-position="bottom" data-delay="50" data-tooltip="正在建设中">直播</a></li>
+          <li><a href="#" class="tooltipped" data-position="bottom" data-delay="50" data-tooltip="正在建设中">猫币</a></li>
+          <li><a class="modal-trigger" href="#setting"><i class="material-icons">settings</i></a></li>
         </ul>
+        
 
         <ul id="nav-mobile" class="side-nav">
           <li><a href="#">猫图</a></li>
@@ -34,6 +36,89 @@
       </div>
     </nav>
 
+    <div id="setting" class="modal">
+      <div class="modal-content">
+        <h4>设置</h4>
+        <div class="row">
+          <div class="col s2">
+            <p>语言设置</p>
+          </div>
+          <div class="input-field col s10">
+            <select id="language">
+              <option value="" disabled selected>Please select your language</option>
+              <option value="zh-hans" data-icon="https://cdn1.iconfinder.com/data/icons/flags-of-the-world-2/128/china-circle-512.png">简体中文</option>
+              <option value="zh-hant" data-icon="https://cdn1.iconfinder.com/data/icons/flags-of-the-world-2/128/china-circle-512.png">繁体中文</option>
+              <option value="english" data-icon="https://cdn1.iconfinder.com/data/icons/flags-of-the-world-2/128/united-states-circle-512.png">English</option>
+            </select>
+          </div>
+
+          <div class="col s2">
+            每行图片
+          </div>
+          <div class="col s10">
+            <select id="img_per_line">
+              <option value="" disabled selected>每行显示几张图片</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="6">6（高分屏）</option>
+              <option value="12">12（高分屏）</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col s2">
+            夜间模式
+          </div>
+          <div class="col s4">
+            <div class=switch>
+              <label>Off
+                <input type="checkbox" id="night_mode">
+                <span class="lever"></span>
+                On</label>
+            </div>
+          </div>
+
+          <div class="col s2">
+            现代设计
+          </div>
+          <div class="col s4">
+            <div class=switch>
+              <label>Off
+                <input type="checkbox" checked>
+                <span class="lever"></span>
+                On</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col s2">
+            自动翻页
+          </div>
+          <div class="col s4">
+            <div class=switch>
+              <label>Off
+                <input type="checkbox">
+                <span class="lever"></span>
+                On</label>
+            </div>
+          </div>
+          <div class="col s2">
+            评论弹窗
+          </div>
+          <div class="col s4">
+            <div class=switch>
+              <label>Off
+                <input type="checkbox">
+                <span class="lever"></span>
+                On</label>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
 
 
     <div class="container">
@@ -41,6 +126,9 @@
         {% for image in images %}
         <div class="col l4 m6 s12 adam" id="{{ image.id }}">
           <div class="card hoverable">
+
+
+
             <div class="card-image">
               <img class="post_image" src="{{ image.still_url }}"/>
             </div>
@@ -73,6 +161,11 @@
         </div>
         {% endfor %}
       </div>
+
+
+
+
+
     </div>
     <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
     <script src="https://cdn.bootcss.com/materialize/0.100.2/js/materialize.js"></script>
@@ -81,14 +174,22 @@
     <script>
       $(document).ready(function(){
         $(".button-collapse").sideNav();
+        $('.tooltipped').tooltip({delay: 50});
+        $('.modal').modal();
+        $('select').material_select();
+        changeImgPerLine({{ img_per_line }});
+        changeNightMode({{ night_mode }});
       });
 
 // change still image to gif
 $(".post_image").click(function(){
   var id2gif = {{ id2gif | safe }};
   var id_t = $(this).closest("div.adam").attr("id");
+  var card_image_div_e = $(this).closest("div.card-image");
+  card_image_div_e.append('<img src="https://andersongardens.org/wp-content/uploads/2017/03/preloader.gif" class="preloader">');
   $(this).attr("src", id2gif[id_t]).on('load', function(){
     console.log("loaded!");
+    card_image_div_e.find(".preloader").remove();
     $(".top-level").masonry({
       itemSelector: '.adam',
     });
@@ -234,7 +335,54 @@ $(document).on('click', '.comment_xx_trigger', function(){
 function scrollToBottom(element){
   var frame = element.closest("div.card-reveal");
   frame.animate({scrollTop: frame[0].scrollHeight}, "fast");
-}
+};
+
+function changeImgPerLine(img_per_line){
+  $.get('{% url 'set_preference'%}', {img_per_line: img_per_line});
+  if(img_per_line == 3){
+    $('div.adam').removeClass('l1 l2 l3 l4');
+    $('div.adam').addClass('l4');
+  }
+  else if(img_per_line == 4){
+    $('div.adam').removeClass('l1 l2 l3 l4');
+    $('div.adam').addClass('l3');
+  }
+  else if(img_per_line == 6){
+    $('div.adam').removeClass('l1 l2 l3 l4');
+    $('div.adam').addClass('l2');
+  }
+  else if(img_per_line == 12){
+    $('div.adam').removeClass('l1 l2 l3 l4');
+    $('div.adam').addClass('l1');
+  }
+};
+
+$('#img_per_line').on('change', function(){
+  img_per_line = $(this).val();
+  changeImgPerLine(img_per_line)
+});
+
+# TODO
+# collection-item is not white
+function changeNightMode(night_mode){
+  $.get('{% url 'set_preference' %}', {night_mode: night_mode});
+  if(night_mode){
+    $('body').css('background-color', 'black');
+    $('.card').css('background-color', '#212121');
+    $('.card-reveal').css({'background-color': '#212121', 'color': 'white'});
+    $('#night_mode').prop('checked', true);
+  }
+  else{
+    $('body').css('background-color', '');
+    $('.card').css('background-color', '');
+    $('.card-reveal').css({'background-color': '', 'color': ''});
+    $('#night_mode').prop('checked', false);
+  }
+};
+
+$('#night_mode').on('change', function(){
+  changeNightMode($(this).prop('checked'));
+})
 
     </script>
   </body>
