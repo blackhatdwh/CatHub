@@ -3,3 +3,7 @@ R.sh
 media/
 *.pyc
 image/migrations/
+cookie.txt
+offset.log
+*.jpg
+*.gif

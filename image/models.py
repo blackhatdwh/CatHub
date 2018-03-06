@@ -4,8 +4,8 @@ from django.db import models
 
 class Image(models.Model):
     name = models.CharField(max_length=30)
-    gif_file = models.FileField(upload_to='image/IMG_FILE')
-    still_file = models.FileField(upload_to='image/IMG_FILE')
+    gif_url = models.URLField()
+    still_url = models.URLField()
     pub_date = models.DateTimeField()
     oo_num = models.IntegerField(default=0)
     xx_num = models.IntegerField(default=0)
@@ -21,3 +21,7 @@ class Comment(models.Model):
     oo_num = models.IntegerField(default=0)
     xx_num = models.IntegerField(default=0)
     reply_to = models.ForeignKey("Comment", on_delete=models.CASCADE, blank=True, null=True)
+
+class Vote(models.Model):
+    image_id = models.ForeignKey(Image, on_delete=models.CASCADE)
+    vote_time = models.DateTimeField()

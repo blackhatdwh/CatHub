@@ -17,7 +17,7 @@ def index(request):
     images = paginator.get_page(page)
     id2gif = {}
     for image in images:
-        id2gif[image.id] = image.gif_file.url
+        id2gif[image.id] = image.gif_url
     form = CommentForm()
 
     context = {
@@ -35,6 +35,8 @@ def validate_ooxx(request):
     image = Image.objects.get(id=image_id)
     if request.GET['attitude'] == 'oo':
         image.oo_num += 1
+        vote = Vote(image_id=image, vote_time=timezone.now())
+        vote.save()
     else:
         image.xx_num += 1
     image.save()
