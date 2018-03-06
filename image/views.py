@@ -2,9 +2,12 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render
 from django.utils import timezone
 from django.http import JsonResponse, HttpResponse
+from django.core.management import call_command
 
 
 import json
+import hashlib
+import random
 from .models import *
 from .form import *
 
@@ -15,13 +18,13 @@ def index(request):
     paginator = Paginator(image_list, 25)
     page = request.GET.get('page')
     images = paginator.get_page(page)
-    id2gif = {}
+    id2original = {}
     for image in images:
-        id2gif[image.id] = image.gif_url
+        id2original[image.id] = image.original_url
     
     context = {
             'images': images,
-            'id2gif': json.dumps(id2gif),
+            'id2original': json.dumps(id2original),
             'img_per_line': request.session.get("img_per_line", 3),
             'night_mode': request.session.get("night_mode", False),
             }
@@ -112,6 +115,27 @@ def set_preference(request):
     night_mode = request.GET.get('night_mode', False)
     if night_mode:
         request.session['night_mode'] = night_mode
-
-
     return JsonResponse({'result': 'Success'})
+
+def add_image(request):
+    name = request.POST.get('name', False)
+    if not name:
+        return HttpResponse("请填写昵称！")
+    url = request.POST.get('url', False)
+    if url:
+        call_command('addusercaturl', url, name)
+        return HttpResponse("添加成功！请耐心等待审核。")
+    filename = request.POST.get('filename', False)
+    if filename:
+        ext = filename.split('.')[-1].strip().lower()
+        filename = '/dev/shm/' + hashlib.md5(str(random.random()).encode()).hexdigest() + '.' + ext
+        img = request.FILES['file']
+        with open(filename, 'wb+') as f:
+            for chunk in img.chunks():
+                f.write(chunk)
+        call_command('addusercatfile', filename, name)
+        return HttpResponse("添加成功！请耐心等待审核。")
+    return HttpResponse("请填写URL或上传文件！")
+
+
+

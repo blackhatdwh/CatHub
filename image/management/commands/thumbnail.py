@@ -10,17 +10,14 @@
 
 from PIL import Image
 from PIL import GifImagePlugin
-def gif2jpg():
+import sys
+def convert(filename, need_mask):
     try:
         mask = Image.open("./mask.png")
-        imageObject = Image.open("./new_cat.gif")
+        imageObject = Image.open(filename)
         imageObject.seek(0)
         
-        segments = imageObject.filename.split('.')[:-1]
-        filename = ''
-        for seg in segments:
-            filename = filename + seg + '.' 
-        filename += 'jpg'
+        output_filename = filename.split('.')[0] + '_thumbnail.jpg'
         
         width, height = imageObject.size
         if width < height:
@@ -32,7 +29,14 @@ def gif2jpg():
         imageObject = imageObject.convert('RGBA')
         mask = mask.convert('RGBA')
         
-        Image.alpha_composite(imageObject, mask).convert('RGB').save(filename)
-        return 0
+        if need_mask:
+            Image.alpha_composite(imageObject, mask).convert('RGB').save(output_filename)
+        else:
+            imageObject.convert('RGB').save(output_filename)
+        return output_filename
     except:
         return -1
+if __name__ == "__main__":
+    filename = sys.argv[1]
+    need_mask = (filename.split('.')[-1].lower().strip() == 'gif')
+    convert(filename, need_mask)

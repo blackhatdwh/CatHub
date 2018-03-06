@@ -4,8 +4,8 @@ from django.db import models
 
 class Image(models.Model):
     name = models.CharField(max_length=30)
-    gif_url = models.URLField()
-    still_url = models.URLField()
+    original_url = models.URLField()
+    thumbnail_url = models.URLField()
     pub_date = models.DateTimeField()
     oo_num = models.IntegerField(default=0)
     xx_num = models.IntegerField(default=0)

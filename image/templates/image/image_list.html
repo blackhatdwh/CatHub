@@ -130,24 +130,24 @@
 
 
             <div class="card-image">
-              <img class="post_image" src="{{ image.still_url }}"/>
+              <img class="post_image" src="{{ image.thumbnail_url }}"/>
             </div>
             <div class="card-content">
               <a class="oo_trigger">
                 <div class="chip hoverable">
-                  <img src="https://image.flaticon.com/icons/svg/196/196586.svg">
+                  <img src="{% static 'image/img/upvote.svg'%}">
                   <span class="oo_num"> {{ image.oo_num }}</span>
                 </div>
               </a>
               <a class="xx_trigger">
                 <div class="chip hoverable">
-                  <img src="https://image.flaticon.com/icons/svg/196/196587.svg">
+                  <img src="{% static 'image/img/downvote.svg'%}">
                   <span class="xx_num"> {{ image.xx_num }}</span>
                 </div>
               </a>
               <a class="comment_trigger comment_off right">
                 <div class="chip activator hoverable">
-                  <img class="activator" src="https://cdn0.iconfinder.com/data/icons/social-messaging-ui-color-shapes/128/chat-circle-blue-512.png">
+                  <img class="activator" src="{% static 'image/img/comment.png'%}">
                   <span class="comment_num"> {{ image.comment_num }}</span>
                 </div>
               </a>
@@ -162,7 +162,43 @@
         {% endfor %}
       </div>
 
+      <div class="fixed-action-btn">
+        <a class="btn-floating btn-large red modal-trigger" href="#add_img">
+          <i class="large material-icons">add</i>
+        </a>
+      </div>
 
+      <div id="add_img" class="modal">
+        <div class="modal-content">
+          <h4 style="display: inline;">添加图片</h4>
+          <span><i class="material-icons tooltipped" data-tooltip="本站仅接收有关猫的投稿（猫娘是不行的）。<br>您所提交的图片将由人工智能自动审核，<br>审核不通过的投稿将由人工二次审核，<br>请耐心等待。<br><b>图片提交后将永久存在于互联网，请谨慎提交。</b>" data-html="true" style="color: gray;">info_outline</i></span>
+          <div class="divider" style="margin-top: 10px;"></div>
+          <form id="add_image_form">
+						{% csrf_token %}
+            <div class="input-field">
+              <input name="name" type="text" id="uploader_nickname">
+              <label for="uploader_nickname">昵称</label>
+            </div>
+            <div class="input-field" >
+              <input name="url" type="text" id="image_url_input">
+              <label for="image_url_input">图片地址</label>
+            </div>
+            <div class="file-field input-field">
+              <div class="btn" id="image_file_input_btn">
+                <span>本地文件</span>
+                <input name="file" type="file" id="image_file_input">
+              </div>
+              <div class="file-path-wrapper">
+                <input name="filename" class="file-path validate" type="text">
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <a class="modal-action modal-close waves-effect waves-green btn-flat submit-img">提交</a>
+          <a class="modal-action modal-close waves-effect waves-green btn-flat">取消</a>
+        </div>
+      </div>
 
 
 
@@ -181,21 +217,25 @@
         changeNightMode({{ night_mode }});
       });
 
+function callMasonry(){
+  $(".top-level").masonry({
+    itemSelector: '.adam',
+  });
+}
 // change still image to gif
 $(".post_image").click(function(){
-  var id2gif = {{ id2gif | safe }};
+  var id2original = {{ id2original | safe }};
   var id_t = $(this).closest("div.adam").attr("id");
   var card_image_div_e = $(this).closest("div.card-image");
-  card_image_div_e.append('<img src="https://andersongardens.org/wp-content/uploads/2017/03/preloader.gif" class="preloader">');
-  $(this).attr("src", id2gif[id_t]).on('load', function(){
+  card_image_div_e.append('<img src="{% static 'image/img/preloader.gif' %}" class="preloader">');
+  $(this).attr("src", id2original[id_t]).on('load', function(){
     console.log("loaded!");
     card_image_div_e.find(".preloader").remove();
-    $(".top-level").masonry({
-      itemSelector: '.adam',
-    });
+    callMasonry();
   });
 });
 
+// vote oo
 $(".oo_trigger").click(function(){ 
   var oo_num_e = $(this).closest("div.adam").find("span.oo_num");
   var image_id_t = $(this).closest("div.adam").attr("id");
@@ -210,6 +250,7 @@ $(".oo_trigger").click(function(){
   });
 });
 
+// vote xx
 $(".xx_trigger").click(function(){ 
   var xx_num_e = $(this).closest("div.adam").find("span.xx_num");
   var image_id_t = $(this).closest("div.adam").attr("id");
@@ -225,6 +266,7 @@ $(".xx_trigger").click(function(){
 });
 
 
+// show comment
 $('.comment_trigger').click(function(){
   var image_id_t = $(this).closest("div.adam").attr("id");
   var comment_ul_e = $(this).closest("div.adam").find(".collection");
@@ -245,12 +287,12 @@ $('.comment_trigger').click(function(){
       <input type=\"hidden\" name=\"image_id\" value=\"%s\">\
       <input type=\"hidden\" name=\"reply_to\" value=\"\">\
       <div class=\"input-field col s12\">\
-      <input name=\"name\" id=\"name\" type=\"text\" style=\"margin-bottom: 0px;\">\
-      <label for=\"name\">昵称</label>\
+      <input name=\"name\" id=\"commenter_name\" type=\"text\" style=\"margin-bottom: 0px;\">\
+      <label for=\"commenter_name\">昵称</label>\
       </div>\
       <div class=\"input-field col s12\">\
-      <textarea name=\"content\" id=\"content\" class=\"materialize-textarea\"></textarea>\
-      <label for=\"content\">评论</label>\
+      <textarea name=\"content\" id=\"comment_content\" class=\"materialize-textarea\"></textarea>\
+      <label for=\"comment_content\">评论</label>\
       </div>\
       <div class=\"col s6\">\
       <a class=\"cancel btn pink lighten-1\"  style=\"width: 100%\"><i class=\"material-icons\">cancel</i></a>\
@@ -266,6 +308,7 @@ $('.comment_trigger').click(function(){
   });
 });
 
+// submit comment
 $(document).on('click', '.submit', function(){
   var image_id_t = $(this).closest("div.adam").attr("id");
   var form_e = $('#'+image_id_t).find("form");
@@ -283,6 +326,7 @@ $(document).on('click', '.submit', function(){
   });
 });
 
+// reply to user
 $(document).on('click', '.user', function(){ 
   var image_id_t = $(this).closest("div.adam").attr("id");
   var comment_id_t = $(this).closest("li.avatar").attr("id").split("_").slice(-1)[0];       // reply to which comment
@@ -295,6 +339,7 @@ $(document).on('click', '.user', function(){
   scrollToBottom($(this));
 });
 
+// cancel comment
 $(document).on('click', '.cancel', function(){ 
   var reply_to_field_e = $(this).closest("div.adam").find('input[name="reply_to"]');
   var content_label_e = $(this).closest("div.adam").find('label[for="content"]');
@@ -304,6 +349,7 @@ $(document).on('click', '.cancel', function(){
   content_field_e.val("");
 });
 
+// vote comment oo
 $(document).on('click', '.comment_oo_trigger', function(){
   var comment_id_t = $(this).closest("li.avatar").attr("id").split("_").slice(-1)[0];
   var oo_num_e = $(this).closest("li.avatar").find("span.comment_oo_num");
@@ -318,6 +364,7 @@ $(document).on('click', '.comment_oo_trigger', function(){
   });
 });
 
+// vote comment xx
 $(document).on('click', '.comment_xx_trigger', function(){
   var comment_id_t = $(this).closest("li.avatar").attr("id").split("_").slice(-1)[0];
   var xx_num_e = $(this).closest("li.avatar").find("span.comment_xx_num");
@@ -337,6 +384,48 @@ function scrollToBottom(element){
   frame.animate({scrollTop: frame[0].scrollHeight}, "fast");
 };
 
+// in add image, url and file mutex
+$('#image_url_input').change(function(){
+  if($('#image_url_input').val() != ''){
+    $('#image_file_input').prop('disabled', true);
+    $('#image_file_input_btn').addClass('disabled');
+  }
+  else{
+    $('#image_file_input').prop('disabled', false);
+    $('#image_file_input_btn').removeClass('disabled');
+  }
+});
+$('#image_file_input').change(function(){
+  if($('#image_file_input').val() != ''){
+    $('#image_url_input').prop('disabled', true);
+  }
+  else{
+    $('#image_url_input').prop('disabled', false);
+  }
+});
+
+$('a.submit-img').click(function(){
+  $('#add_image_form').submit();
+});
+
+$('#add_image_form').submit(function(evt){
+  evt.preventDefault();
+  var formData = new FormData($(this)[0]);
+  $.ajax({
+    url: '{% url 'add_image' %}',
+    type: 'POST',
+    data: formData,
+    async: false,
+    cache: false,
+		contentType: false,
+		enctype: 'multipart/form-data',
+		processData: false,
+		success: function (response) {
+      Materialize.toast(response, 4000, 'orange rounded')
+		}
+  });
+});
+
 function changeImgPerLine(img_per_line){
   $.get('{% url 'set_preference'%}', {img_per_line: img_per_line});
   if(img_per_line == 3){
@@ -355,6 +444,7 @@ function changeImgPerLine(img_per_line){
     $('div.adam').removeClass('l1 l2 l3 l4');
     $('div.adam').addClass('l1');
   }
+  callMasonry();
 };
 
 $('#img_per_line').on('change', function(){
@@ -362,8 +452,8 @@ $('#img_per_line').on('change', function(){
   changeImgPerLine(img_per_line)
 });
 
-# TODO
-# collection-item is not white
+// TODO
+// collection-item is not inverted
 function changeNightMode(night_mode){
   $.get('{% url 'set_preference' %}', {night_mode: night_mode});
   if(night_mode){
@@ -382,7 +472,7 @@ function changeNightMode(night_mode){
 
 $('#night_mode').on('change', function(){
   changeNightMode($(this).prop('checked'));
-})
+});
 
     </script>
   </body>
