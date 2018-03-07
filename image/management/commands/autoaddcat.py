@@ -50,7 +50,7 @@ class Command(BaseCommand):
             self.stderr.write(self.style.ERROR('Fail to upload jpg.'))
             sys.exit()
 
-        new_cat = Image(name='CatHub', original_url=original_url, thumbnail_url=thumbnail_url, pub_date=timezone.now(), oo_num=0, xx_num=0, comment_num=0)
+        new_cat = Image(name='CatHub', original_url=original_url, thumbnail_url=thumbnail_url, pub_date=timezone.now(), oo_num=0, xx_num=0, comment_num=0, legal=True)
         new_cat.save()
         subprocess.getoutput('rm '+filename)
         subprocess.getoutput('rm '+thumbnail_filename)

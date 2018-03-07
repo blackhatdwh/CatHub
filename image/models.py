@@ -10,6 +10,7 @@ class Image(models.Model):
     oo_num = models.IntegerField(default=0)
     xx_num = models.IntegerField(default=0)
     comment_num = models.IntegerField(default=0)
+    legal = models.NullBooleanField(default=None)
     def __str__(self):
         return self.name
 
@@ -20,6 +21,7 @@ class Comment(models.Model):
     pub_date = models.DateTimeField()
     oo_num = models.IntegerField(default=0)
     xx_num = models.IntegerField(default=0)
+    legal = models.NullBooleanField(default=None)
     reply_to = models.ForeignKey("Comment", on_delete=models.CASCADE, blank=True, null=True)
 
 class Vote(models.Model):

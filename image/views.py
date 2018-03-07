@@ -1,5 +1,5 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.http import JsonResponse, HttpResponse
 from django.core.management import call_command
@@ -14,21 +14,24 @@ from .form import *
 
 # Create your views here.
 def index(request):
-    image_list = Image.objects.all().order_by("-pub_date")
+    image_list = Image.objects.filter(legal=True).order_by("-pub_date")
     paginator = Paginator(image_list, 25)
-    page = request.GET.get('page')
+    page = request.GET.get('page', 1)
     images = paginator.get_page(page)
     id2original = {}
     for image in images:
         id2original[image.id] = image.original_url
-    
-    context = {
-            'images': images,
-            'id2original': json.dumps(id2original),
-            'img_per_line': request.session.get("img_per_line", 3),
-            'night_mode': request.session.get("night_mode", False),
-            }
-    return render(request, 'image/image_list.html', context) 
+    if page == 1:
+        context = {
+                'images': images,
+                'page': page,
+                'id2original': json.dumps(id2original),
+                'img_per_line': request.session.get("img_per_line", 3),
+                'night_mode': request.session.get("night_mode", 'false'),
+                }
+        return render(request, 'image/image_list.html', context) 
+    else:
+        return JsonResponse()
 def validate_ooxx(request):
     image_id = request.GET.get('image_id', None)
     if request.session.get('%s_has_voted'%image_id, False):
@@ -90,6 +93,8 @@ def add_comment(request):
                 xx_num = 0,\
                 reply_to = reply_to,\
                 )
+        # validate comment
+        comment.legal = True
         comment.save()
         return JsonResponse({'result': 'Success'})
     else:
@@ -114,7 +119,7 @@ def set_preference(request):
         request.session['img_per_line'] = img_per_line
     night_mode = request.GET.get('night_mode', False)
     if night_mode:
-        request.session['night_mode'] = night_mode
+        request.session['night_mode'] = str(night_mode).lower()
     return JsonResponse({'result': 'Success'})
 
 def add_image(request):
@@ -137,5 +142,29 @@ def add_image(request):
         return HttpResponse("添加成功！请耐心等待审核。")
     return HttpResponse("请填写URL或上传文件！")
 
+def review(request):
+    if request.user.is_superuser:
+        if request.method == 'GET':
+            try:
+                image_for_review = Image.objects.filter(legal=False)[0]
+            except IndexError:
+                return HttpResponse("Nothing to review now.")
+            context = {
+                    'image_for_review': image_for_review,
+                    }
+            return render(request, 'image/review.html', context)
+        else:
+            image_id = request.POST['image_id']
+            attitude = request.POST['attitude']
+            image = Image.objects.get(id=image_id)
+            print(attitude)
+            if attitude == 'pass':
+                image.legal = True
+                image.save()
+            elif attitude == 'kill':
+                image.delete()
+            return HttpResponse('Success')
+    else:
+        return redirect('index')
 
 

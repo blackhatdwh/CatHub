@@ -208,6 +208,7 @@
     <script src="https://cdn.bootcss.com/masonry/4.2.1/masonry.pkgd.js"></script>
 
     <script>
+var page = {{ page }};
       $(document).ready(function(){
         $(".button-collapse").sideNav();
         $('.tooltipped').tooltip({delay: 50});
@@ -422,6 +423,12 @@ $('#add_image_form').submit(function(evt){
 		processData: false,
 		success: function (response) {
       Materialize.toast(response, 4000, 'orange rounded')
+      $('#image_url_input').val('');
+      $('#image_file_input').val(null);
+      $('input[name=filename]').val('');
+      $('#image_file_input').prop('disabled', false);
+      $('#image_file_input_btn').removeClass('disabled');
+      $('#image_url_input').prop('disabled', false);
 		}
   });
 });
@@ -473,6 +480,16 @@ function changeNightMode(night_mode){
 $('#night_mode').on('change', function(){
   changeNightMode($(this).prop('checked'));
 });
+
+// load when bottom reached
+$(window).scroll(function() {
+   if($(window).scrollTop() + $(window).height() == $(document).height()) {
+     page += 1;
+     $.get('{% url 'index' %}', {'page': page}, function(){
+     });
+   }
+});
+
 
     </script>
   </body>
