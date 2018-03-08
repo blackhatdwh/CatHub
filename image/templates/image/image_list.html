@@ -5,7 +5,7 @@
     {% load static %}
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>CatHub</title>
+    <title>CatHub - 云吸猫 云养猫</title>
     <link href="https://cdn.bootcss.com/materialize/0.100.2/css/materialize.css" rel="stylesheet">
     <link href="https://cdn.bootcss.com/material-design-icons/3.0.1/iconfont/material-icons.css" rel="stylesheet">
     <link href="{% static 'image/css/style.css' %}" rel="stylesheet">
@@ -31,6 +31,7 @@
           <li><a href="#">名猫</a></li>
           <li><a href="#">直播</a></li>
           <li><a href="#">猫币</a></li>
+          <li><a class="modal-trigger" href="#setting"><i class="material-icons">settings</i></a></li>
         </ul>
         <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
       </div>
@@ -126,9 +127,6 @@
         {% for image in images %}
         <div class="col l4 m6 s12 adam" id="{{ image.id }}">
           <div class="card hoverable">
-
-
-
             <div class="card-image">
               <img class="post_image" src="{{ image.thumbnail_url }}"/>
             </div>
@@ -154,7 +152,7 @@
             </div>
             <div class="card-reveal">
               <span class="card-title username">{{ image.name }}<i class="material-icons right">close</i></span>
-              <span class="pub_date">发布于{{ image.pub_date }}</span>
+              <span class="pub_date">发布于{{ image.pub_date }}<a class="right original_link" target="_blank" href="">查看原图</a></span>
               <ul class="collection"></ul>
             </div>
           </div>
@@ -209,6 +207,8 @@
 
     <script>
 var page = {{ page }};
+var end = false;
+var id2original = {{ id2original | safe }};
       $(document).ready(function(){
         $(".button-collapse").sideNav();
         $('.tooltipped').tooltip({delay: 50});
@@ -224,51 +224,49 @@ function callMasonry(){
   });
 }
 // change still image to gif
-$(".post_image").click(function(){
-  var id2original = {{ id2original | safe }};
+$(document).on('click', ".post_image", function(){
   var id_t = $(this).closest("div.adam").attr("id");
   var card_image_div_e = $(this).closest("div.card-image");
   card_image_div_e.append('<img src="{% static 'image/img/preloader.gif' %}" class="preloader">');
   $(this).attr("src", id2original[id_t]).on('load', function(){
-    console.log("loaded!");
     card_image_div_e.find(".preloader").remove();
     callMasonry();
   });
 });
 
 // vote oo
-$(".oo_trigger").click(function(){ 
+$(document).on('click', ".oo_trigger", function(){ 
   var oo_num_e = $(this).closest("div.adam").find("span.oo_num");
   var image_id_t = $(this).closest("div.adam").attr("id");
   $.get('{% url 'validate_ooxx' %}', {image_id: image_id_t, attitude: 'oo'}, function(data){
-    if(data.result == 'Success'){
+    if(data == 'Success'){
       Materialize.toast('投票成功！', 4000, 'orange rounded');
       oo_num_e.text(parseInt(oo_num_e.text()) + 1);
     }
     else{
-      Materialize.toast(data.result, 4000, 'orange rounded');
+      Materialize.toast(data, 4000, 'orange rounded');
     }
   });
 });
 
 // vote xx
-$(".xx_trigger").click(function(){ 
+$(document).on('click', ".xx_trigger", function(){ 
   var xx_num_e = $(this).closest("div.adam").find("span.xx_num");
   var image_id_t = $(this).closest("div.adam").attr("id");
   $.get('{% url 'validate_ooxx' %}', {image_id: image_id_t, attitude: 'xx'}, function(data){
-    if(data.result == 'Success'){
+    if(data == 'Success'){
       Materialize.toast('投票成功！', 4000, 'orange rounded');
       xx_num_e.text(parseInt(xx_num_e.text()) + 1);
     }
     else{
-      Materialize.toast(data.result, 4000, 'orange rounded');
+      Materialize.toast(data, 4000, 'orange rounded');
     }
   });
 });
 
 
 // show comment
-$('.comment_trigger').click(function(){
+$(document).on('click', '.comment_trigger', function(){
   var image_id_t = $(this).closest("div.adam").attr("id");
   var comment_ul_e = $(this).closest("div.adam").find(".collection");
   comment_ul_e.empty();
@@ -315,14 +313,14 @@ $(document).on('click', '.submit', function(){
   var form_e = $('#'+image_id_t).find("form");
   var this_ = $(this);
   $.post('{% url 'add_comment' %}', form_e.serialize(), function(data){
-    if(data.result == "Success"){
+    if(data == "Success"){
       Materialize.toast('评论成功！', 4000, 'orange rounded');
       $("#"+image_id_t).find("span.card-title").click();
       $("#"+image_id_t).find("div.activator").click();
       //scrollToBottom(this_);
     }
     else{
-      Materialize.toast(data.result, 4000, 'orange rounded');
+      Materialize.toast(data, 4000, 'orange rounded');
     }
   });
 });
@@ -355,12 +353,12 @@ $(document).on('click', '.comment_oo_trigger', function(){
   var comment_id_t = $(this).closest("li.avatar").attr("id").split("_").slice(-1)[0];
   var oo_num_e = $(this).closest("li.avatar").find("span.comment_oo_num");
   $.get('{% url 'validate_comment_ooxx' %}', {comment_id: comment_id_t, attitude: 'oo'}, function(data){
-    if(data.result == 'Success'){
+    if(data == 'Success'){
       oo_num_e.text(parseInt(oo_num_e.text())+1);
       Materialize.toast('投票成功！', 4000, 'orange rounded');
     }
     else{
-      Materialize.toast(data.result, 4000, 'orange rounded');
+      Materialize.toast(data, 4000, 'orange rounded');
     }
   });
 });
@@ -370,12 +368,12 @@ $(document).on('click', '.comment_xx_trigger', function(){
   var comment_id_t = $(this).closest("li.avatar").attr("id").split("_").slice(-1)[0];
   var xx_num_e = $(this).closest("li.avatar").find("span.comment_xx_num");
   $.get('{% url 'validate_comment_ooxx' %}', {comment_id: comment_id_t, attitude: 'xx'}, function(data){
-    if(data.result == 'Success'){
+    if(data == 'Success'){
       xx_num_e.text(parseInt(xx_num_e.text())+1);
       Materialize.toast('投票成功！', 4000, 'orange rounded');
     }
     else{
-      Materialize.toast(data.result, 4000, 'orange rounded');
+      Materialize.toast(data, 4000, 'orange rounded');
     }
   });
 });
@@ -384,6 +382,12 @@ function scrollToBottom(element){
   var frame = element.closest("div.card-reveal");
   frame.animate({scrollTop: frame[0].scrollHeight}, "fast");
 };
+
+// show original
+$(document).on('click', '.original_link', function(){
+  var original_link = id2original[$(this).closest('.adam').attr('id')];
+  $(this).attr('href', original_link);
+});
 
 // in add image, url and file mutex
 $('#image_url_input').change(function(){
@@ -459,21 +463,25 @@ $('#img_per_line').on('change', function(){
   changeImgPerLine(img_per_line)
 });
 
-// TODO
-// collection-item is not inverted
 function changeNightMode(night_mode){
   $.get('{% url 'set_preference' %}', {night_mode: night_mode});
   if(night_mode){
     $('body').css('background-color', 'black');
     $('.card').css('background-color', '#212121');
     $('.card-reveal').css({'background-color': '#212121', 'color': 'white'});
+    $('.modal').css({'background-color': '#212121', 'color': 'white'});
+    $('.modal-footer').css({'background-color': '#111111'});
     $('#night_mode').prop('checked', true);
+    $('head').append("<style id='night_mode_css'>.collection .collection-item.avatar{background-color:black}<\/script>");
   }
   else{
     $('body').css('background-color', '');
     $('.card').css('background-color', '');
     $('.card-reveal').css({'background-color': '', 'color': ''});
     $('#night_mode').prop('checked', false);
+    $('#night_mode_css').remove();
+    $('.modal').css({'background-color': '', 'color': ''});
+    $('.modal-footer').css({'background-color': ''});
   }
 };
 
@@ -481,13 +489,43 @@ $('#night_mode').on('change', function(){
   changeNightMode($(this).prop('checked'));
 });
 
-// load when bottom reached
+// load when scroll to bottom
 $(window).scroll(function() {
-   if($(window).scrollTop() + $(window).height() == $(document).height()) {
-     page += 1;
-     $.get('{% url 'index' %}', {'page': page}, function(){
-     });
-   }
+  if($(window).scrollTop() + $(window).height() == $(document).height() && !end) {
+    Materialize.toast('<img src="https://vignette.wikia.nocookie.net/yandere-simulator-fanon/images/3/38/Pusheen.gif/revision/latest?cb=20170323104013"><br><span>正在加载</span>', 4000, 'pink rounded');
+    $('body').css('overflow', 'hidden');
+    $.get('{% url 'index' %}', {'page': page+1}, function(data){
+      if(data['meta']['length'] != 0){
+        page += 1;
+      }
+      else{
+        Materialize.toast('没有更多内容了', 4000, 'orange rounded');
+        $('body').css('overflow', '');
+        end = true;
+        return;
+      }
+      // merge id2original
+      id2original = Object.assign({}, id2original, data['id2original']);
+      // add new cards
+      for(i = 0; i < data['meta']['length']; i++){
+        var image = data['images'][i];
+        var card = $('.adam').first().clone();
+        $('div.top-level').append(card).masonry('appended', card);
+        $('.adam').last().attr('id', image['id']);
+        $('.adam').last().find('.post_image').attr('src', image['thumbnail_url']);
+        $('.adam').last().find('span.oo_num').text(image['oo_num']);
+        $('.adam').last().find('span.xx_num').text(image['xx_num']);
+        $('.adam').last().find('span.comment_num').text(image['comment_num']);
+        $('.adam').last().find('span.username').html(image['name']+'<i class="material-icons right">close</i>');
+        $('.adam').last().find('span.pub_date').html("发布于"+image['pub_date']+'<a class="right original_link" target="_blank" href="">查看原图</a>');
+      }
+      setTimeout(function(){
+        callMasonry();
+        Materialize.Toast.removeAll();
+        $('body').css('overflow', '');
+      }, 500);
+    });
+  }
 });
 
 

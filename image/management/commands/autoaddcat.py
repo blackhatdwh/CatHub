@@ -28,7 +28,7 @@ class Command(BaseCommand):
         print('wget finished')
             
         # thumbnail
-        thumbnail_filename = convert(filename, true)
+        thumbnail_filename = convert(filename)
         if thumbnail_filename != -1:
             pass
         else:

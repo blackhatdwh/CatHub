@@ -7,7 +7,6 @@ from .search import search
 from .thumbnail import convert
 from .upload2weibo import upload
 import subprocess
-import random
 
 # search, wget, gif2jpg, upload2weibo
 class Command(BaseCommand):
@@ -19,10 +18,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         filename = options['filename&name'][0]
         name = options['filename&name'][1]
-        ext = filename.split('.')[-1].lower().strip()
             
         # generate thumbnail
-        thumbnail_filename = convert(filename, (ext=='gif'))
+        thumbnail_filename = convert(filename)
         if  thumbnail_filename != -1:
             pass
         else:

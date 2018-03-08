@@ -7,8 +7,9 @@ from .search import search
 from .thumbnail import convert
 from .upload2weibo import upload
 import subprocess
+import random
 
-# search, wget, gif2jpg, upload2weibo
+# wget, gif2jpg, upload2weibo
 class Command(BaseCommand):
     help = 'add a new cat'
 
@@ -19,7 +20,7 @@ class Command(BaseCommand):
         url = options['url&name'][0]
         name = options['url&name'][1]
         ext = url.split('.')[-1].lower().strip()
-        filename = '/dev/shm/' + hashlib.md5(url.encode()).hexdigest() + '.' + ext
+        filename = '/dev/shm/' + hashlib.md5(str(random.random()).encode()).hexdigest() + '.' + ext
         # wget
         try:
             subprocess.getoutput('wget %s -O %s'%(url, filename))
@@ -28,7 +29,7 @@ class Command(BaseCommand):
             sys.exit()
             
         # generate thumbnail
-        thumbnail_filename = convert(filename, (ext=='gif'))
+        thumbnail_filename = convert(filename)
         if  thumbnail_filename != -1:
             pass
         else:

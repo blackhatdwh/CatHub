@@ -11,13 +11,18 @@ import random
 from .models import *
 from .form import *
 
+import time
+
 
 # Create your views here.
 def index(request):
     image_list = Image.objects.filter(legal=True).order_by("-pub_date")
-    paginator = Paginator(image_list, 25)
+    paginator = Paginator(image_list, 10)
     page = request.GET.get('page', 1)
-    images = paginator.get_page(page)
+    try:
+        images = paginator.page(page)
+    except:
+        return JsonResponse({'meta': {'length': 0}}, safe=False)
     id2original = {}
     for image in images:
         id2original[image.id] = image.original_url
@@ -31,11 +36,28 @@ def index(request):
                 }
         return render(request, 'image/image_list.html', context) 
     else:
-        return JsonResponse()
+        images_json = []
+        id2original = {}
+        for image in images:
+            image_json = {}
+            image_json['id'] = image.id
+            image_json['thumbnail_url'] = image.thumbnail_url
+            image_json['oo_num'] = image.oo_num
+            image_json['xx_num'] = image.xx_num
+            image_json['comment_num'] = image.comment_num
+            image_json['name'] = image.name
+            image_json['pub_date'] = image.pub_date
+            print(image.pub_date.__str__())
+            images_json.append(image_json)
+            id2original[image.id] = image.original_url
+        meta = {}
+        meta['length'] = len(images)
+        context_json = {'images': images_json, 'id2original': id2original, 'meta': meta}
+        return JsonResponse(context_json, safe=False)
 def validate_ooxx(request):
     image_id = request.GET.get('image_id', None)
     if request.session.get('%s_has_voted'%image_id, False):
-        return JsonResponse({'result': '你已经投过票了'})
+        return HttpResponse('你已经投过票了')
     request.session['%s_has_voted'%image_id] = True
     image = Image.objects.get(id=image_id)
     if request.GET['attitude'] == 'oo':
@@ -45,7 +67,7 @@ def validate_ooxx(request):
     else:
         image.xx_num += 1
     image.save()
-    return JsonResponse({'result': 'Success'})
+    return HttpResponse('Success')
 
 
 def get_comment(request):
@@ -72,9 +94,9 @@ def get_comment(request):
 def add_comment(request):
     if request.method == 'POST':
         if request.POST['name'] == '':
-            return JsonResponse({'result': '昵称不可为空'})
+            return HttpResponse('昵称不可为空')
         if request.POST['content'] == '':
-            return JsonResponse({'result': '内容不可为空'})
+            return HttpResponse('内容不可为空')
         image = Image.objects.get(id=request.POST['image_id'])
         image.comment_num += 1
         image.save()
@@ -96,14 +118,14 @@ def add_comment(request):
         # validate comment
         comment.legal = True
         comment.save()
-        return JsonResponse({'result': 'Success'})
+        return HttpResponse('Success')
     else:
         pass
 
 def validate_comment_ooxx(request):
     comment_id = request.GET.get('comment_id', None)
     if request.session.get('%s_has_voted'%comment_id, False):
-        return JsonResponse({'result': '你已经投过票了'})
+        return HttpResponse('你已经投过票了')
     request.session['%s_has_voted'%comment_id] = True
     comment = Comment.objects.get(id=comment_id)
     if request.GET['attitude'] == 'oo':
@@ -111,7 +133,7 @@ def validate_comment_ooxx(request):
     else:
         comment.xx_num += 1
     comment.save()
-    return JsonResponse({'result': 'Success'})
+    return HttpResponse('Success')
 
 def set_preference(request):
     img_per_line = request.GET.get('img_per_line', False)
@@ -120,7 +142,7 @@ def set_preference(request):
     night_mode = request.GET.get('night_mode', False)
     if night_mode:
         request.session['night_mode'] = str(night_mode).lower()
-    return JsonResponse({'result': 'Success'})
+    return HttpResponse('Success')
 
 def add_image(request):
     name = request.POST.get('name', False)
@@ -166,5 +188,6 @@ def review(request):
             return HttpResponse('Success')
     else:
         return redirect('index')
+
 
 

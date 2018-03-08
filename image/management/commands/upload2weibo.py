@@ -9,6 +9,7 @@
 import base64
 import subprocess
 import re
+import sys
 
 def upload(image_file):
     try:
@@ -27,10 +28,17 @@ def upload(image_file):
         pid = re.search(r'(?<="pid":").*(?=")', result).group(0)
         
         still_format = ['jpg', 'png', 'bmp', 'jpeg']
-        if image_file.split('.')[-1].lower().strip() not in still_format:
+        with open(image_file, 'rb') as f:
+            if f.read(6) == b'GIF89a':
+                is_still = False
+            else
+                is_still = True
+        if not is_still:
             return("http://ww1.sinaimg.cn/large/%s.gif"%pid)
         else:
             return("http://ww1.sinaimg.cn/large/%s.jpg"%pid)
     except:
         return -1
     
+if __name__ == '__main__':
+    print(upload(sys.argv[1]))

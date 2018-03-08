@@ -11,9 +11,14 @@
 from PIL import Image
 from PIL import GifImagePlugin
 import sys
-def convert(filename, need_mask):
+def convert(filename):
     try:
         mask = Image.open("./mask.png")
+        with open(filename, 'rb') as f:
+            if f.read(6) == b'GIF89a':
+                need_mask = True
+            else
+                need_mask = False
         imageObject = Image.open(filename)
         imageObject.seek(0)
         
@@ -38,5 +43,4 @@ def convert(filename, need_mask):
         return -1
 if __name__ == "__main__":
     filename = sys.argv[1]
-    need_mask = (filename.split('.')[-1].lower().strip() == 'gif')
-    convert(filename, need_mask)
+    convert(filename)
