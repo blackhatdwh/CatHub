@@ -30,10 +30,13 @@ def index(request):
         context = {
                 'images': images,
                 'page': page,
+                'accept_terms': 'false',
                 'id2original': json.dumps(id2original),
                 'img_per_line': request.session.get("img_per_line", 3),
                 'night_mode': request.session.get("night_mode", 'false'),
+                'accept_terms': request.session.get("accept_terms", 'false'),
                 }
+        print('index', request.session.get('accept_terms', 'false'))
         return render(request, 'image/image_list.html', context) 
     else:
         images_json = []
@@ -142,6 +145,10 @@ def set_preference(request):
     night_mode = request.GET.get('night_mode', False)
     if night_mode:
         request.session['night_mode'] = str(night_mode).lower()
+    accept_terms = request.GET.get('accept_terms', False)
+    print('set', accept_terms)
+    if accept_terms:
+        request.session['accept_terms'] = 'true'
     return HttpResponse('Success')
 
 def add_image(request):
@@ -189,5 +196,7 @@ def review(request):
     else:
         return redirect('index')
 
+def recycle(request):
+    return HttpResponse("recycle")
 
 

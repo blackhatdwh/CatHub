@@ -5,7 +5,7 @@
     {% load static %}
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>CatHub - 云吸猫 云养猫</title>
+    <title>CatHub | 云吸猫 云养猫</title>
     <link href="https://cdn.bootcss.com/materialize/0.100.2/css/materialize.css" rel="stylesheet">
     <link href="https://cdn.bootcss.com/material-design-icons/3.0.1/iconfont/material-icons.css" rel="stylesheet">
     <link href="{% static 'image/css/style.css' %}" rel="stylesheet">
@@ -20,9 +20,16 @@
           <li><a href="#" class="tooltipped" data-position="bottom" data-delay="50" data-tooltip="正在建设中">名猫</a></li>
           <li><a href="#" class="tooltipped" data-position="bottom" data-delay="50" data-tooltip="正在建设中">直播</a></li>
           <li><a href="#" class="tooltipped" data-position="bottom" data-delay="50" data-tooltip="正在建设中">猫币</a></li>
+          <li><a href="#" class="dropdown-button" data-activates='more' data-beloworigin="true" data-hover="true">更多</a></li>
           <li><a class="modal-trigger" href="#setting"><i class="material-icons">settings</i></a></li>
         </ul>
         
+        <ul id="more" class="dropdown-content">
+          <li><a href="{% url 'recycle' %}">回收站</a></li>
+          <li><a class="waves-effect modal-trigger" href="#terms">条款</a></li>
+          <li><a class="waves-effect modal-trigger" href="#about">关于</a></li>
+        </ul>
+
 
         <ul id="nav-mobile" class="side-nav">
           <li><a href="#">猫图</a></li>
@@ -37,22 +44,40 @@
       </div>
     </nav>
 
+    <!--TERMS MODAL-->
+    <div id="terms" class="modal modal-fixed-footer">
+      <div class="modal-content">
+        {% include 'image/terms.html' %}
+        <p>
+        <input type="checkbox" id="accept-terms-checkbox" class='filled-in'/>
+        <label for="accept-terms-checkbox">我已阅读并同意本协议。</label>
+        </p>
+      </div>
+      <div class="modal-footer">
+        <a class="disabled modal-action modal-close waves-effect waves-green btn-flat accept-terms">同意</a>
+        <a href="https://www.bing.com/" class="modal-action modal-close waves-effect waves-green btn-flat">不同意</a>
+      </div>
+    </div>
+
+    <!--SETTING MODAL-->
     <div id="setting" class="modal">
       <div class="modal-content">
-        <h4>设置</h4>
+        <h4>设置<span class="right modal-close"><i class="material-icons">close</i></span></h4>
         <div class="row">
           <div class="col s2">
             <p>语言设置</p>
           </div>
           <div class="input-field col s10">
             <select id="language">
-              <option value="" disabled selected>Please select your language</option>
-              <option value="zh-hans" data-icon="https://cdn1.iconfinder.com/data/icons/flags-of-the-world-2/128/china-circle-512.png">简体中文</option>
-              <option value="zh-hant" data-icon="https://cdn1.iconfinder.com/data/icons/flags-of-the-world-2/128/china-circle-512.png">繁体中文</option>
+              <option value="" disabled selected>请选择你的语言 / Please select your language</option>
+              <option value="zh-hans" data-icon="https://cdn1.iconfinder.com/data/icons/flags-of-the-world-2/128/china-circle-512.png">大陆简体</option>
+              <option value="zh-hans" data-icon="https://cdn1.iconfinder.com/data/icons/asia-country-flags/103/HONGKONG-512.png">香港繁體</option>
+              <option value="zh-hant" data-icon="https://cdn3.iconfinder.com/data/icons/50-flags-of-the-world-circular-shape/60/Circular_world_Flag_38-512.png">台灣正體</option>
               <option value="english" data-icon="https://cdn1.iconfinder.com/data/icons/flags-of-the-world-2/128/united-states-circle-512.png">English</option>
             </select>
           </div>
-
+        </div>
+        <div class="row hide-on-small-only">
           <div class="col s2">
             每行图片
           </div>
@@ -91,6 +116,18 @@
                 On</label>
             </div>
           </div>
+        </div>
+        
+        <div class="row" id="change_image_opacity" style="display: none">
+          <div class="col s2">
+            图片亮度
+          </div>
+          <div class="col s10">
+            <p class="range-field">
+              <input type="range" min="0" max="100">
+            </p>
+          </div>
+
         </div>
 
         <div class="row">
@@ -161,7 +198,7 @@
       </div>
 
       <div class="fixed-action-btn">
-        <a class="btn-floating btn-large red modal-trigger" href="#add_img">
+        <a class="btn-floating btn-large modal-trigger" style="background-color: #f44336" href="#add_img">
           <i class="large material-icons">add</i>
         </a>
       </div>
@@ -206,16 +243,34 @@
     <script src="https://cdn.bootcss.com/masonry/4.2.1/masonry.pkgd.js"></script>
 
     <script>
+var accept_terms = {{ accept_terms }};
 var page = {{ page }};
 var end = false;
 var id2original = {{ id2original | safe }};
       $(document).ready(function(){
         $(".button-collapse").sideNav();
         $('.tooltipped').tooltip({delay: 50});
-        $('.modal').modal();
+        $('#terms').modal({dismissible: false, opacity: 1});
+        if(!accept_terms){
+          $('#terms').modal('open');
+        }
+        $('#setting').modal();
+        $('#add_img').modal();
         $('select').material_select();
         changeImgPerLine({{ img_per_line }});
         changeNightMode({{ night_mode }});
+      });
+
+      $('#accept-terms-checkbox').click(function(){
+        if($(this).prop('checked')){
+          $('a.accept-terms').removeClass('disabled');
+        }
+        else{
+          $('a.accept-terms').addClass('disabled');
+        }
+      })
+      $('.accept-terms').click(function(){
+        $.get('{% url 'set_preference' %}', {accept_terms: true});
       });
 
 function callMasonry(){
@@ -332,7 +387,7 @@ $(document).on('click', '.user', function(){
   var comment_name_t = $(this).parent().children('b.user').text();     // replyee's name
   var reply_to_field_e = $(this).closest("div.adam").find('input[name="reply_to"]');
   var content_field_e = $(this).closest("div.adam").find('textarea[name="content"]');
-  var content_label_e = $(this).closest("div.adam").find('label[for="content"]');
+  var content_label_e = $(this).closest("div.adam").find('label[for="comment_content"]');
   reply_to_field_e.val(comment_id_t);
   content_label_e.text("回复 "+comment_name_t);
   scrollToBottom($(this));
@@ -341,7 +396,7 @@ $(document).on('click', '.user', function(){
 // cancel comment
 $(document).on('click', '.cancel', function(){ 
   var reply_to_field_e = $(this).closest("div.adam").find('input[name="reply_to"]');
-  var content_label_e = $(this).closest("div.adam").find('label[for="content"]');
+  var content_label_e = $(this).closest("div.adam").find('label[for="comment_content"]');
   var content_field_e = $(this).closest("div.adam").find('textarea[name="content"]');
   reply_to_field_e.val("");
   content_label_e.text("评论");
@@ -466,28 +521,28 @@ $('#img_per_line').on('change', function(){
 function changeNightMode(night_mode){
   $.get('{% url 'set_preference' %}', {night_mode: night_mode});
   if(night_mode){
-    $('body').css('background-color', 'black');
-    $('.card').css('background-color', '#212121');
-    $('.card-reveal').css({'background-color': '#212121', 'color': 'white'});
-    $('.modal').css({'background-color': '#212121', 'color': 'white'});
-    $('.modal-footer').css({'background-color': '#111111'});
     $('#night_mode').prop('checked', true);
-    $('head').append("<style id='night_mode_css'>.collection .collection-item.avatar{background-color:black}<\/script>");
+    $('head').append("<link id='night_mode_css' href='{% static 'image/css/night_mode.css'%}' rel='stylesheet'>");
+    $('#change_image_opacity').css('display', '');
   }
   else{
-    $('body').css('background-color', '');
-    $('.card').css('background-color', '');
-    $('.card-reveal').css({'background-color': '', 'color': ''});
     $('#night_mode').prop('checked', false);
     $('#night_mode_css').remove();
-    $('.modal').css({'background-color': '', 'color': ''});
-    $('.modal-footer').css({'background-color': ''});
+    $('#change_image_opacity').css('display', 'none');
+    $('#night_mode_image_opacity_css').remove();
   }
 };
 
 $('#night_mode').on('change', function(){
   changeNightMode($(this).prop('checked'));
 });
+
+// adjust image opacity
+$(document).on('change', "input[type=range]", function(){
+  var opacity = parseInt($("p.range-field span.thumb span.value").text()) / 100;
+  $("#night_mode_image_opacity_css").remove();
+  $('head').append('<style id="night_mode_image_opacity_css">img{opacity:'+opacity.toString()+'}</style>');
+})
 
 // load when scroll to bottom
 $(window).scroll(function() {
