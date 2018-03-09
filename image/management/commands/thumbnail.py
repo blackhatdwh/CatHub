@@ -17,7 +17,7 @@ def convert(filename):
         with open(filename, 'rb') as f:
             if f.read(6) == b'GIF89a':
                 need_mask = True
-            else
+            else:
                 need_mask = False
         imageObject = Image.open(filename)
         imageObject.seek(0)

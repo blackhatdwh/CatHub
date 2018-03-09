@@ -8,6 +8,7 @@ from django.core.management import call_command
 import json
 import hashlib
 import random
+from io import StringIO
 from .models import *
 from .form import *
 
@@ -35,8 +36,8 @@ def index(request):
                 'img_per_line': request.session.get("img_per_line", 3),
                 'night_mode': request.session.get("night_mode", 'false'),
                 'accept_terms': request.session.get("accept_terms", 'false'),
+                'username': request.session.get('username', ''),
                 }
-        print('index', request.session.get('accept_terms', 'false'))
         return render(request, 'image/image_list.html', context) 
     else:
         images_json = []
@@ -50,7 +51,6 @@ def index(request):
             image_json['comment_num'] = image.comment_num
             image_json['name'] = image.name
             image_json['pub_date'] = image.pub_date
-            print(image.pub_date.__str__())
             images_json.append(image_json)
             id2original[image.id] = image.original_url
         meta = {}
@@ -146,9 +146,12 @@ def set_preference(request):
     if night_mode:
         request.session['night_mode'] = str(night_mode).lower()
     accept_terms = request.GET.get('accept_terms', False)
-    print('set', accept_terms)
     if accept_terms:
         request.session['accept_terms'] = 'true'
+    username = request.GET.get('username', '')
+    if username != '':
+        request.session['username'] = username
+    print('username:', username)
     return HttpResponse('Success')
 
 def add_image(request):
@@ -157,7 +160,10 @@ def add_image(request):
         return HttpResponse("请填写昵称！")
     url = request.POST.get('url', False)
     if url:
-        call_command('addusercaturl', url, name)
+        try:
+            call_command('addusercaturl', url, name)
+        except Exception as e:
+            return HttpResponse(str(e))
         return HttpResponse("添加成功！请耐心等待审核。")
     filename = request.POST.get('filename', False)
     if filename:
@@ -167,7 +173,10 @@ def add_image(request):
         with open(filename, 'wb+') as f:
             for chunk in img.chunks():
                 f.write(chunk)
-        call_command('addusercatfile', filename, name)
+        try:
+            call_command('addusercatfile', filename, name)
+        except Exception as e:
+            return HttpResponse(str(e))
         return HttpResponse("添加成功！请耐心等待审核。")
     return HttpResponse("请填写URL或上传文件！")
 
@@ -186,7 +195,6 @@ def review(request):
             image_id = request.POST['image_id']
             attitude = request.POST['attitude']
             image = Image.objects.get(id=image_id)
-            print(attitude)
             if attitude == 'pass':
                 image.legal = True
                 image.save()

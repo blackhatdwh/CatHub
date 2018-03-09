@@ -198,7 +198,7 @@
       </div>
 
       <div class="fixed-action-btn">
-        <a class="btn-floating btn-large modal-trigger" style="background-color: #f44336" href="#add_img">
+        <a class="btn-floating btn-large modal-trigger" style="background-color: #f44336" href="#add_img" id="add_img_button">
           <i class="large material-icons">add</i>
         </a>
       </div>
@@ -246,6 +246,7 @@
 var accept_terms = {{ accept_terms }};
 var page = {{ page }};
 var end = false;
+var username = '{{ username }}';
 var id2original = {{ id2original | safe }};
       $(document).ready(function(){
         $(".button-collapse").sideNav();
@@ -341,7 +342,7 @@ $(document).on('click', '.comment_trigger', function(){
       <input type=\"hidden\" name=\"image_id\" value=\"%s\">\
       <input type=\"hidden\" name=\"reply_to\" value=\"\">\
       <div class=\"input-field col s12\">\
-      <input name=\"name\" id=\"commenter_name\" type=\"text\" style=\"margin-bottom: 0px;\">\
+      <input name=\"name\" id=\"commenter_name\" type=\"text\" style=\"margin-bottom: 0px;\" value=\"%s1\">\
       <label for=\"commenter_name\">昵称</label>\
       </div>\
       <div class=\"input-field col s12\">\
@@ -355,7 +356,7 @@ $(document).on('click', '.comment_trigger', function(){
       <a class=\"submit btn\"  style=\"width: 100%\"><i class=\"material-icons\">send</i></a>\
       </div>\
       </form>\
-      </div>".replace("%s", image_id_t);
+      </div>".replace("%s", image_id_t).replace('%s1', username);
 
     comment_ul_e.parent().append(form);
     Materialize.updateTextFields();
@@ -366,6 +367,7 @@ $(document).on('click', '.comment_trigger', function(){
 $(document).on('click', '.submit', function(){
   var image_id_t = $(this).closest("div.adam").attr("id");
   var form_e = $('#'+image_id_t).find("form");
+  var comment_num_e = $(this).closest('div.adam').find('span.comment_num');
   var this_ = $(this);
   $.post('{% url 'add_comment' %}', form_e.serialize(), function(data){
     if(data == "Success"){
@@ -373,6 +375,10 @@ $(document).on('click', '.submit', function(){
       $("#"+image_id_t).find("span.card-title").click();
       $("#"+image_id_t).find("div.activator").click();
       //scrollToBottom(this_);
+      comment_num_e.text(parseInt(comment_num_e.text())+1);
+      var new_username = form_e.find('input[name=name]').val();
+      $.get('{% url 'set_preference' %}', {'username': new_username});   // set default username
+      username = new_username;
     }
     else{
       Materialize.toast(data, 4000, 'orange rounded');
@@ -464,6 +470,11 @@ $('#image_file_input').change(function(){
   }
 });
 
+// change username in add image form
+$('#add_img_button').click(function(){
+  $('#uploader_nickname').val(username);
+});
+
 $('a.submit-img').click(function(){
   $('#add_image_form').submit();
 });
@@ -488,6 +499,8 @@ $('#add_image_form').submit(function(evt){
       $('#image_file_input').prop('disabled', false);
       $('#image_file_input_btn').removeClass('disabled');
       $('#image_url_input').prop('disabled', false);
+      $.get('{% url 'set_preference' %}', {'username': $('#uploader_nickname').val()});   // set default username
+      username = $('#uploader_nickname').val();
 		}
   });
 });

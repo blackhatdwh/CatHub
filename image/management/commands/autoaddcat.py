@@ -15,7 +15,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # search
-        url = search('cat')
+        url, credit_url = search('cat')
         print(url)
 
         # wget
@@ -50,7 +50,7 @@ class Command(BaseCommand):
             self.stderr.write(self.style.ERROR('Fail to upload jpg.'))
             sys.exit()
 
-        new_cat = Image(name='CatHub', original_url=original_url, thumbnail_url=thumbnail_url, pub_date=timezone.now(), oo_num=0, xx_num=0, comment_num=0, legal=True)
+        new_cat = Image(name='CatHub', original_url=original_url, thumbnail_url=thumbnail_url, pub_date=timezone.now(), oo_num=0, xx_num=0, comment_num=0, legal=True, credit_url=credit_url)
         new_cat.save()
         subprocess.getoutput('rm '+filename)
         subprocess.getoutput('rm '+thumbnail_filename)

@@ -25,7 +25,7 @@ class Command(BaseCommand):
             pass
         else:
             self.stderr.write(self.style.ERROR('Fail to convert.'))
-            sys.exit()
+            raise CommandError('无法解析该图片')
 
         # upload2weibo
         original_url = upload(filename)
@@ -33,14 +33,14 @@ class Command(BaseCommand):
             pass
         else:
             self.stderr.write(self.style.ERROR('Fail to upload gif.'))
-            sys.exit()
+            raise CommandError('无法上传原图到微博图床')
 
         thumbnail_url = upload(thumbnail_filename)
         if thumbnail_url != -1:
             pass
         else:
             self.stderr.write(self.style.ERROR('Fail to upload jpg.'))
-            sys.exit()
+            raise CommandError('无法上传缩略图到微博图床')
 
         new_cat = Image(name=name, original_url=original_url, thumbnail_url=thumbnail_url, pub_date=timezone.now(), oo_num=0, xx_num=0, comment_num=0)
         new_cat.save()

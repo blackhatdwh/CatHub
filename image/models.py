@@ -11,6 +11,7 @@ class Image(models.Model):
     xx_num = models.IntegerField(default=0)
     comment_num = models.IntegerField(default=0)
     legal = models.NullBooleanField(default=None)
+    credit_url = models.URLField(blank=True)
     def __str__(self):
         return self.name
 

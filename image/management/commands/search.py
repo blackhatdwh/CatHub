@@ -25,5 +25,6 @@ def search(term):
     
     
     result = json.loads(subprocess.getoutput('curl -s "http://api.giphy.com/v1/gifs/search?q=%s&api_key=sJCW72y5MenLzghYm3v6yFNqW1XRhw7C&offset=%s&limit=1"'%(term, offset)))
-    return result['data'][0]['images']['original']['url']
+    # return [gif_url, credit_url]
+    return [result['data'][0]['images']['original']['url'], result['data'][0]['url']]
 
