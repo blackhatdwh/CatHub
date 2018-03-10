@@ -25,7 +25,7 @@ SECRET_KEY = '^m$sp_#h!1!uy0=h3(9u2c=#xis(qfb9%yyo_bcjh#+yioetff'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['35.201.167.200']
 
 
 # Application definition
@@ -124,6 +124,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = '/home/weihao/Code/CatHub/CatHub/static/'
-MEDIA_URL = '/media/'
-MEDIA_ROOT = '/home/weihao/Code/CatHub/CatHub/media/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')

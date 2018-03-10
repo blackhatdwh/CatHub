@@ -16,16 +16,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # search
         url, credit_url = search('cat')
-        print(url)
 
         # wget
         filename = '/dev/shm/' + hashlib.md5(str(random.random()).encode()).hexdigest() + '.gif'
         try:
-            subprocess.getoutput('wget %s -O %s'%(url, filename))
+            subprocess.getoutput('wget %s -q --timeout 20 -t 2 -O %s'%(url, filename))
         except:
             self.stderr.write(self.style.ERROR('Fail to download. URL: %s'%url))
             sys.exit()
-        print('wget finished')
             
         # thumbnail
         thumbnail_filename = convert(filename)

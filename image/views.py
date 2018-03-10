@@ -11,7 +11,7 @@ import random
 from io import StringIO
 from .models import *
 from .form import *
-from .verify import verify_image
+from .verify import google_verify_image
 
 import time
 
@@ -213,13 +213,13 @@ def recycle(request):
     return HttpResponse("recycle")
 
 def verify_image(request):
-    print('i received verify request')
     image_id = request.GET.get('image_id', -1)
     image_id = int(image_id)
     if image_id != -1:
         image = Image.objects.get(id=image_id)
-        #result = verify_image(image.original_url)
-        result = 0
+        print('image:', image.original_url)
+        result = google_verify_image(image.original_url)
+        #result = 0
         if result == -1:
             image.legal = False
             image.save()
@@ -233,5 +233,4 @@ def verify_image(request):
             image.save()
             return HttpResponse('您于%s上传的图片通过审核。'%image.pub_date)
     else:
-        return HttpResponse('')
-    return HttpResponse(image_id)
+        return HttpResponse('不要捣乱哦 喵')

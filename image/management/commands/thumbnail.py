@@ -13,7 +13,7 @@ from PIL import GifImagePlugin
 import sys
 def convert(filename):
     try:
-        mask = Image.open("./mask.png")
+        mask = Image.open("/home/blackhatdwh/CatHub/mask.png")
         with open(filename, 'rb') as f:
             if f.read(6) == b'GIF89a':
                 need_mask = True
