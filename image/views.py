@@ -11,6 +11,7 @@ import random
 from io import StringIO
 from .models import *
 from .form import *
+from .verify import verify_image
 
 import time
 
@@ -51,6 +52,7 @@ def index(request):
             image_json['comment_num'] = image.comment_num
             image_json['name'] = image.name
             image_json['pub_date'] = image.pub_date
+            image_json['credit_url'] = image.credit_url
             images_json.append(image_json)
             id2original[image.id] = image.original_url
         meta = {}
@@ -118,7 +120,7 @@ def add_comment(request):
                 xx_num = 0,\
                 reply_to = reply_to,\
                 )
-        # validate comment
+        # TODO validate comment
         comment.legal = True
         comment.save()
         return HttpResponse('Success')
@@ -151,20 +153,21 @@ def set_preference(request):
     username = request.GET.get('username', '')
     if username != '':
         request.session['username'] = username
-    print('username:', username)
     return HttpResponse('Success')
 
 def add_image(request):
     name = request.POST.get('name', False)
     if not name:
-        return HttpResponse("请填写昵称！")
+        return JsonResponse({'result': "请填写昵称！", 'image_id': -1})
     url = request.POST.get('url', False)
     if url:
         try:
-            call_command('addusercaturl', url, name)
+            out = StringIO()
+            call_command('addusercaturl', url, name, stdout=out)
+            new_image_id = out.getvalue().split('.')[1]
         except Exception as e:
-            return HttpResponse(str(e))
-        return HttpResponse("添加成功！请耐心等待审核。")
+            return JsonResponse({'result': str(e), 'image_id': -1})
+        return JsonResponse({'result': "添加成功！请耐心等待审核。", 'image_id': new_image_id})
     filename = request.POST.get('filename', False)
     if filename:
         ext = filename.split('.')[-1].strip().lower()
@@ -174,11 +177,13 @@ def add_image(request):
             for chunk in img.chunks():
                 f.write(chunk)
         try:
-            call_command('addusercatfile', filename, name)
+            out = StringIO()
+            call_command('addusercatfile', filename, name, stdout=out)
+            new_image_id = out.getvalue().split('.')[1]
         except Exception as e:
-            return HttpResponse(str(e))
-        return HttpResponse("添加成功！请耐心等待审核。")
-    return HttpResponse("请填写URL或上传文件！")
+            return JsonResponse({'result': str(e), 'image_id': -1})
+        return JsonResponse({'result': "添加成功！请耐心等待审核。", 'image_id': new_image_id})
+    return JsonResponse({'result': "请填写URL或上传文件！", 'image_id': -1})
 
 def review(request):
     if request.user.is_superuser:
@@ -207,4 +212,26 @@ def review(request):
 def recycle(request):
     return HttpResponse("recycle")
 
-
+def verify_image(request):
+    print('i received verify request')
+    image_id = request.GET.get('image_id', -1)
+    image_id = int(image_id)
+    if image_id != -1:
+        image = Image.objects.get(id=image_id)
+        #result = verify_image(image.original_url)
+        result = 0
+        if result == -1:
+            image.legal = False
+            image.save()
+            return HttpResponse('您于%s上传的图片疑似含有敏感信息，请等待人工审核。'%image.pub_date)
+        elif result == -2:
+            image.legal = False
+            image.save()
+            return HttpResponse('您于%s上传的图片似乎不是猫图，请等待人工审核。'%image.pub_date)
+        else:
+            image.legal = True
+            image.save()
+            return HttpResponse('您于%s上传的图片通过审核。'%image.pub_date)
+    else:
+        return HttpResponse('')
+    return HttpResponse(image_id)

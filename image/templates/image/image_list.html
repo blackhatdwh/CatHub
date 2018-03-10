@@ -189,7 +189,7 @@
             </div>
             <div class="card-reveal">
               <span class="card-title username">{{ image.name }}<i class="material-icons right">close</i></span>
-              <span class="pub_date">发布于{{ image.pub_date }}<a class="right original_link" target="_blank" href="">查看原图</a></span>
+              <span class="pub_date">{{ image.pub_date }}<a class="right original_link" target="_blank" href="">|查看原图|</a><a class="right credit_link" target="_blank" href="{{ image.credit_url }}">|来源|</a></span>
               <ul class="collection"></ul>
             </div>
           </div>
@@ -492,7 +492,7 @@ $('#add_image_form').submit(function(evt){
 		enctype: 'multipart/form-data',
 		processData: false,
 		success: function (response) {
-      Materialize.toast(response, 4000, 'orange rounded')
+      Materialize.toast(response.result, 4000, 'orange rounded')
       $('#image_url_input').val('');
       $('#image_file_input').val(null);
       $('input[name=filename]').val('');
@@ -501,6 +501,12 @@ $('#add_image_form').submit(function(evt){
       $('#image_url_input').prop('disabled', false);
       $.get('{% url 'set_preference' %}', {'username': $('#uploader_nickname').val()});   // set default username
       username = $('#uploader_nickname').val();
+      if(response.image_id != -1){
+        console.log('i send out verify request');
+        $.get('{% url 'verify_image' %}', {'image_id': response.image_id}, function(response){
+          Materialize.toast(response, 4000, 'orange rounded');
+        });
+      }
 		}
   });
 });
@@ -585,7 +591,7 @@ $(window).scroll(function() {
         $('.adam').last().find('span.xx_num').text(image['xx_num']);
         $('.adam').last().find('span.comment_num').text(image['comment_num']);
         $('.adam').last().find('span.username').html(image['name']+'<i class="material-icons right">close</i>');
-        $('.adam').last().find('span.pub_date').html("发布于"+image['pub_date']+'<a class="right original_link" target="_blank" href="">查看原图</a>');
+        $('.adam').last().find('span.pub_date').html(image['pub_date']+'<a class="right original_link" target="_blank" href="">|查看原图|</a><a class="right credit_link" target="_blank" href="'+image['credit_url']+'">|来源|</a>');
       }
       setTimeout(function(){
         callMasonry();

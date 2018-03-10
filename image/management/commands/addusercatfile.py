@@ -47,4 +47,4 @@ class Command(BaseCommand):
         subprocess.getoutput('rm '+filename)
         subprocess.getoutput('rm '+thumbnail_filename)
 
-        self.stdout.write(self.style.SUCCESS('Successfully add a cat.'))
+        self.stdout.write(self.style.SUCCESS('.%s.'%new_cat.id))
