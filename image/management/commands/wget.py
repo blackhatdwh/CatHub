@@ -9,7 +9,7 @@
 import subprocess, sys
 def download(url, filename):
     try:
-        output = subprocess.check_output('wget %s -q --timeout 20 -t 1 -O %s --user-agent="Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0"' % (url, filename), shell=True, timeout=30)
+        output = subprocess.check_output('wget %s -q --timeout 10 -t 1 -O %s --user-agent="Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0"' % (url, filename), shell=True, timeout=20)
     except subprocess.CalledProcessError as e:
         return e.returncode
     return 0

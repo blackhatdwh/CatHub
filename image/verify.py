@@ -3,7 +3,7 @@ import subprocess
 import json
 import sys
 
-def verify_image(url):
+def google_verify_image(url):
     command = 'curl -s -H "Content-Type: application/json" https://vision.googleapis.com/v1/images:annotate?key=AIzaSyC2F-NrDgXR530blIxYzTcdQm-P8vDNErs --data-binary \'{ "requests": [ { "image": { "source": { "imageUri": "%s" } }, "features": [ { "type": "LABEL_DETECTION", }, { "type": "SAFE_SEARCH_DETECTION", } ] } ] }\'' % url
     result = subprocess.getoutput(command)
     result = json.loads(result)

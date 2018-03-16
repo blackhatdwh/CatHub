@@ -13,13 +13,13 @@ import os.path
 def search(term):
     offset = 0
     
-    if os.path.isfile('offset.log'):
-        with open('offset.log') as f:
+    if os.path.isfile('/home/blackhatdwh/CatHub/cathub_offset.log'):
+        with open('/home/blackhatdwh/CatHub/cathub_offset.log') as f:
             offset = int(f.read()) + 1
-        with open('offset.log', 'w') as f:
+        with open('/home/blackhatdwh/CatHub/cathub_offset.log', 'w') as f:
             f.write(str(offset))
     else:
-        with open('offset.log', 'w') as f:
+        with open('/home/blackhatdwh/CatHub/cathub_offset.log', 'w') as f:
             f.write(str(offset))
     
     

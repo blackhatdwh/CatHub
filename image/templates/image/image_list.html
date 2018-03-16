@@ -502,7 +502,6 @@ $('#add_image_form').submit(function(evt){
       $.get('{% url 'set_preference' %}', {'username': $('#uploader_nickname').val()});   // set default username
       username = $('#uploader_nickname').val();
       if(response.image_id != -1){
-        console.log('i send out verify request');
         $.get('{% url 'verify_image' %}', {'image_id': response.image_id}, function(response){
           Materialize.toast(response, 4000, 'orange rounded');
         });
@@ -566,7 +565,7 @@ $(document).on('change', "input[type=range]", function(){
 // load when scroll to bottom
 $(window).scroll(function() {
   if($(window).scrollTop() + $(window).height() == $(document).height() && !end) {
-    Materialize.toast('<img src="{% static 'image/img/pusheen.gif' %}"><br><span>正在加载</span>', 4000, 'pink rounded');
+    Materialize.toast('<img src="{% static 'image/img/pusheen.gif' %}" style="width: 50%"><br><span>正在加载</span>', 4000, 'pink rounded');
     $('body').css('overflow', 'hidden');
     $.get('{% url 'index' %}', {'page': page+1}, function(data){
       if(data['meta']['length'] != 0){
